@@ -76,6 +76,7 @@
 						</td>
 						<td>
 							{line.merchandise.price.amount}
+							{' '}
 							{line.merchandise.price.currencyCode}
 						</td>
 						<td>
@@ -90,6 +91,7 @@
 						</td>
 						<td>
 							{line.cost.subtotalAmount.amount}
+							{' '}
 							{line.cost.subtotalAmount.currencyCode}
 						</td>
 						<td>
@@ -106,6 +108,7 @@
 					Subtotal:
 					<strong>
 						{$subtotal.amount}
+						{' '}
 						{$subtotal.currencyCode}
 					</strong>
 				</p>

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { cart } from '$lib/stores/cart';
-	import { onMount } from 'svelte';
 
 	export let data: PageData;
 
@@ -38,6 +37,17 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{product.title} | Storefront</title>
+	<meta name="description" content={product.description} />
+	<meta property="og:type" content="product" />
+	<meta property="og:title" content={product.title} />
+	<meta property="og:description" content={product.description} />
+	{#if product.featuredImage}
+		<meta property="og:image" content={product.featuredImage.url} />
+	{/if}
+</svelte:head>
+
 <main class="page">
 	<a class="back" href="/">← Back to products</a>
 
@@ -56,6 +66,7 @@
 			<h1>{product.title}</h1>
 			<p class="price">
 				{product.priceRange.minVariantPrice.amount}
+				{' '}
 				{product.priceRange.minVariantPrice.currencyCode}
 			</p>
 

@@ -35,6 +35,7 @@
 						<h2>{product.title}</h2>
 						<p class="price">
 							{product.priceRange.minVariantPrice.amount}
+							{' '}
 							{product.priceRange.minVariantPrice.currencyCode}
 						</p>
 					</a>

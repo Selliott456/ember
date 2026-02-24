@@ -1,42 +1,62 @@
-# sv
+## Headless Shopify Storefront (SvelteKit)
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Minimal SvelteKit + TypeScript storefront using the Shopify Storefront GraphQL API and Cart API.
 
-## Creating a project
+### Requirements
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Node.js 18.17+ or 20.5+
+- npm (or pnpm / yarn)
+- A Shopify store with a Storefront API access token
 
-```sh
-# create a new project
-npx sv create my-app
+### Environment variables
+
+Create a `.env` file in the project root (never commit this) with:
+
+```bash
+SHOPIFY_STORE_DOMAIN=your-shop-name.myshopify.com
+SHOPIFY_STOREFRONT_API_VERSION=2025-01
+SHOPIFY_STOREFRONT_API_TOKEN=your_storefront_access_token
+
+# Optional overrides
+SHOPIFY_CART_COOKIE_NAME=cart_id
+SHOPIFY_CART_COOKIE_MAX_AGE_DAYS=30
 ```
 
-To recreate this project with the same configuration:
+All Shopify configuration is read server-side from `$env/dynamic/private` in `src/lib/config/shopify.ts`; the Storefront token is **never** exposed to the client.
 
-```sh
-# recreate this project
-npx sv create --template minimal --types ts --install npm .
-```
+### Running locally
 
-## Developing
+Install dependencies and start the dev server:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+```bash
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Then open `http://localhost:5173`:
 
-To create a production version of your app:
+- `/` – featured products (SSR)
+- `/products/[handle]` – product detail page with variant selector and “Add to cart”
+- `/cart` – cart lines, quantity updates, remove, and checkout link
 
-```sh
-npm run build
-```
+Cart state is backed by Shopify’s Cart API and persisted via an HttpOnly `cart_id` cookie.
 
-You can preview the production build with `npm run preview`.
+### Shopify integration overview
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- GraphQL client: `src/lib/server/shopify/client.ts`
+- Queries and mutations: `src/lib/server/shopify/queries.ts`
+- Types: `src/lib/server/shopify/types.ts`
+- High-level API (products + cart): `src/lib/server/shopify/index.ts`
+- Cart cookie helpers: `src/lib/server/cartCookie.ts`
+- Cart API routes: `src/routes/api/cart/*`
+
+All Shopify calls are made server-side only (under `src/lib/server` and `src/routes/api`).
+
+### Deployment notes
+
+1. Choose and configure a SvelteKit adapter (e.g. `@sveltejs/adapter-auto` for Node / serverless).
+2. Set the same environment variables on your hosting platform as in `.env`.
+3. Ensure `SHOPIFY_STORE_DOMAIN`, `SHOPIFY_STOREFRONT_API_VERSION`, and `SHOPIFY_STOREFRONT_API_TOKEN` are present in the production environment.
+4. Serve over HTTPS in production so the `cart_id` cookie can be marked `Secure`.
+
+Sitemap and robots placeholders live under `static/robots.txt` and `static/sitemap.xml`; update the `Sitemap` URL and hostnames when deploying.
