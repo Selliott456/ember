@@ -1,0 +1,57 @@
+export type Money = {
+  amount: string;
+  currencyCode: string;
+};
+
+export type ProductVariant = {
+  id: string;
+  title: string;
+  availableForSale: boolean;
+  price: Money;
+  product?: {
+    id: string;
+    handle: string;
+    title: string;
+  };
+};
+
+export type Product = {
+  id: string;
+  handle: string;
+  title: string;
+  description: string;
+  featuredImage?: {
+    url: string;
+    altText: string | null;
+  };
+  priceRange: {
+    minVariantPrice: Money;
+  };
+  variants: ProductVariant[];
+};
+
+export type CartLine = {
+  id: string;
+  quantity: number;
+  cost: {
+    subtotalAmount: Money;
+  };
+  merchandise: ProductVariant;
+};
+
+export type Cart = {
+  id: string;
+  checkoutUrl: string;
+  totalQuantity: number;
+  cost: {
+    subtotalAmount: Money;
+    totalAmount: Money;
+  };
+  lines: CartLine[];
+};
+
+export type ShopifyUserError = {
+  field?: string[] | null;
+  message: string;
+};
+
