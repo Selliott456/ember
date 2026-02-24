@@ -28,9 +28,10 @@ export const shopifyConfig: ShopifyConfig = (() => {
     privateEnv.SHOPIFY_STOREFRONT_API_VERSION
   );
 
+  // Prefer the new private token env name, but fall back to the old one if present
   const storefrontToken = required(
-    'SHOPIFY_STOREFRONT_API_TOKEN',
-    privateEnv.SHOPIFY_STOREFRONT_API_TOKEN
+    'SHOPIFY_STOREFRONT_PRIVATE_TOKEN (or legacy SHOPIFY_STOREFRONT_API_TOKEN)',
+    privateEnv.SHOPIFY_STOREFRONT_PRIVATE_TOKEN ?? privateEnv.SHOPIFY_STOREFRONT_API_TOKEN
   );
 
   const cartCookieName =

@@ -29,7 +29,7 @@ export async function shopifyGraphQL<Data, Variables = Record<string, unknown>>(
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-Shopify-Storefront-Access-Token': shopifyConfig.storefrontToken,
+    'Shopify-Storefront-Private-Token': shopifyConfig.storefrontToken,
     ...extraHeaders
   };
 

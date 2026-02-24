@@ -1,22 +1,11 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { cart } from '$lib/stores/cart';
 	import { onMount } from 'svelte';
 	import { derived } from 'svelte/store';
 
-	export let data: PageData;
-
-	const initialCart = data.cart;
-
-	// Seed the store on mount if we have server data.
+	// Load cart state on mount; do not create a cart until an add happens.
 	onMount(() => {
-		if (initialCart) {
-			cart.clearCart(); // reset to known state via API
-			// Re-load to ensure sync with server cookie; this will typically return null
-			// right after clearing, but then user actions will drive the cart.
-		} else {
-			cart.loadCart();
-		}
+		cart.loadCart();
 	});
 
 	const state = cart;
@@ -42,13 +31,9 @@
 
 	<a class="back" href="/">← Continue shopping</a>
 
-	{#await state.loadCart() then}
-		<!-- content will react to store state -->
-	{/await}
-
-	{$state.loading && !$state.cart && (
+	{#if $state.loading && !$state.cart}
 		<p>Loading cart…</p>
-	)}
+	{/if}
 
 	{#if $state.error}
 		<p class="error">{$state.error}</p>
