@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { addToCart, getOrCreateCart } from '$lib/server/shopify';
-import { getCartId, setCartId } from '$lib/server/cartCookie';
+import { addToCart, createCart, getOrCreateCart } from '$lib/server/shopify';
+import { getCartId, setCartId, clearCartId, isCartNotFound } from '$lib/server/cartCookie';
 import { apiError } from '$lib/server/apiResponse';
 
 type AddBody = {
@@ -25,7 +25,7 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	const existingCartId = getCartId(event);
-	const cartResult = await getOrCreateCart(existingCartId);
+	let cartResult = await getOrCreateCart(existingCartId);
 
 	if (!cartResult.ok || !cartResult.data) {
 		return apiError(
@@ -36,11 +36,29 @@ export const POST: RequestHandler = async (event) => {
 
 	setCartId(event, cartResult.data.id);
 
-	const addResult = await addToCart(
+	let addResult = await addToCart(
 		cartResult.data.id,
 		body.merchandiseId,
 		body.quantity
 	);
+
+	// Stale cart: add failed because cart not found; recreate and retry once.
+	if (!addResult.ok && isCartNotFound(addResult)) {
+		clearCartId(event);
+		const createResult = await createCart();
+		if (!createResult.ok || !createResult.data) {
+			return apiError(
+				createResult.error ?? { code: 'SHOPIFY_ERROR', message: 'Failed to create cart' },
+				createResult.status ?? 502
+			);
+		}
+		setCartId(event, createResult.data.id);
+		addResult = await addToCart(
+			createResult.data.id,
+			body.merchandiseId,
+			body.quantity
+		);
+	}
 
 	if (!addResult.ok || !addResult.data) {
 		return apiError(

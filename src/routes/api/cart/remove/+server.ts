@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { removeFromCart } from '$lib/server/shopify';
-import { getCartId } from '$lib/server/cartCookie';
+import { getCartId, clearCartId, isCartNotFound } from '$lib/server/cartCookie';
 import { apiError } from '$lib/server/apiResponse';
 
 type RemoveBody = {
@@ -24,6 +24,10 @@ export const POST: RequestHandler = async (event) => {
 	const result = await removeFromCart(cartId, [body.lineId]);
 
 	if (!result.ok || !result.data) {
+		if (isCartNotFound(result)) {
+			clearCartId(event);
+			return apiError({ code: 'CART_NOT_FOUND', message: 'Cart not found' }, 404);
+		}
 		return apiError(
 			result.error ?? { code: 'SHOPIFY_ERROR', message: 'Failed to remove cart line' },
 			result.status ?? 502

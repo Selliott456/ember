@@ -55,6 +55,11 @@ function errorMessage(err: unknown): string {
 	return typeof err === 'string' ? err : 'Request failed';
 }
 
+/** True if API error indicates cart was not found (stale); client should clear cart state. */
+function isCartNotFoundError(data: { ok: false; error?: { code?: string } }): boolean {
+	return data.error?.code === 'CART_NOT_FOUND';
+}
+
 function createCartStore() {
 	const { subscribe, update, set } = writable<CartState>(initialState);
 
@@ -70,7 +75,7 @@ function createCartStore() {
 				return;
 			}
 
-			set({ cart: data.cart, loading: false, error: null });
+			set({ cart: data.cart ?? null, loading: false, error: null });
 		} catch (e) {
 			set({
 				cart: null,
@@ -93,7 +98,12 @@ function createCartStore() {
 			const data = await res.json();
 
 			if (!data.ok) {
-				update((state) => ({ ...state, loading: false, error: errorMessage(data.error) }));
+				update((state) => ({
+					...state,
+					loading: false,
+					error: errorMessage(data.error),
+					...(isCartNotFoundError(data) && { cart: null })
+				}));
 				return;
 			}
 
@@ -123,7 +133,8 @@ function createCartStore() {
 				update((state) => ({
 					...state,
 					loading: false,
-					error: errorMessage(data.error)
+					error: errorMessage(data.error),
+					...(isCartNotFoundError(data) && { cart: null })
 				}));
 				return;
 			}
@@ -154,7 +165,8 @@ function createCartStore() {
 				update((state) => ({
 					...state,
 					loading: false,
-					error: errorMessage(data.error)
+					error: errorMessage(data.error),
+					...(isCartNotFoundError(data) && { cart: null })
 				}));
 				return;
 			}
