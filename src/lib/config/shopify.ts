@@ -37,7 +37,7 @@ export const shopifyConfig: ShopifyConfig = (() => {
   );
 
   const cartCookieName =
-    privateEnv.SHOPIFY_CART_COOKIE_NAME?.trim() || 'cartId';
+    privateEnv.SHOPIFY_CART_COOKIE_NAME?.trim() || 'cart_id';
 
   const cartCookieMaxAgeDays = Number(
     privateEnv.SHOPIFY_CART_COOKIE_MAX_AGE_DAYS ?? '30'
