@@ -226,3 +226,74 @@ export const CART_LINES_REMOVE_MUTATION = `
   }
 `;
 
+/** Product fields reused for collection products (same as product list). */
+const COLLECTION_PRODUCT_FIELDS = `
+  id
+  handle
+  title
+  description
+  featuredImage {
+    url
+    altText
+  }
+  priceRange {
+    minVariantPrice {
+      amount
+      currencyCode
+    }
+  }
+  variants(first: 20) {
+    edges {
+      node {
+        id
+        title
+        availableForSale
+        price {
+          amount
+          currencyCode
+        }
+      }
+    }
+  }
+`;
+
+export const COLLECTIONS_QUERY = `
+  query CollectionsList($first: Int!) {
+    collections(first: $first) {
+      edges {
+        node {
+          id
+          handle
+          title
+          image {
+            url
+            altText
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const COLLECTION_BY_HANDLE_QUERY = `
+  query CollectionByHandle($handle: String!, $productsFirst: Int!) {
+    collection(handle: $handle) {
+      id
+      handle
+      title
+      description
+      image {
+        url
+        altText
+      }
+      products(first: $productsFirst) {
+        edges {
+          node {
+            ${COLLECTION_PRODUCT_FIELDS}
+          }
+        }
+      }
+    }
+  }
+`;
+

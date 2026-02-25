@@ -55,3 +55,15 @@ export type ShopifyUserError = {
   message: string;
 };
 
+export type Collection = {
+  id: string;
+  handle: string;
+  title: string;
+  description?: string;
+  image?: {
+    url: string;
+    altText: string | null;
+  };
+  products?: Product[];
+};
+

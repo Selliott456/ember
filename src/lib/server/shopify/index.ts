@@ -7,6 +7,8 @@ import { logShopify } from './logger';
 import {
   PRODUCT_LIST_QUERY,
   PRODUCT_BY_HANDLE_QUERY,
+  COLLECTIONS_QUERY,
+  COLLECTION_BY_HANDLE_QUERY,
   CART_QUERY,
   CART_CREATE_MUTATION,
   CART_LINES_ADD_MUTATION,
@@ -18,6 +20,7 @@ import type {
   ProductVariant,
   Cart,
   CartLine,
+  Collection,
   Money,
   ShopifyUserError
 } from './types';
@@ -37,6 +40,33 @@ type ProductListResponse = {
 
 type ProductByHandleResponse = {
   product: ProductNode | null;
+};
+
+type CollectionsListResponse = {
+  collections: {
+    edges: { node: CollectionNode }[];
+  };
+};
+
+type CollectionByHandleResponse = {
+  collection: CollectionWithProductsNode | null;
+};
+
+type CollectionNode = {
+  id: string;
+  handle: string;
+  title: string;
+  image: {
+    url: string;
+    altText: string | null;
+  } | null;
+};
+
+type CollectionWithProductsNode = CollectionNode & {
+  description?: string | null;
+  products: {
+    edges: { node: ProductNode }[];
+  };
 };
 
 type CartResponse = {
@@ -182,6 +212,25 @@ function mapVariant(node: ProductVariantNode): ProductVariant {
   };
 }
 
+function mapCollection(node: CollectionNode): Collection {
+  return {
+    id: node.id,
+    handle: node.handle,
+    title: node.title,
+    image: node.image
+      ? { url: node.image.url, altText: node.image.altText }
+      : undefined
+  };
+}
+
+function mapCollectionWithProducts(node: CollectionWithProductsNode): Collection {
+  return {
+    ...mapCollection(node),
+    description: node.description || undefined,
+    products: node.products.edges.map(({ node: p }) => mapProduct(p))
+  };
+}
+
 function mapCart(node: CartNode): Cart {
   return {
     id: node.id,
@@ -322,6 +371,59 @@ export async function getProductByHandle(
     };
   } catch (e) {
     return wrapClientError(e, OP_GET_PRODUCT_BY_HANDLE) as ShopifyOperationResult<Product | null>;
+  }
+}
+
+const OP_GET_COLLECTIONS = 'getCollections';
+
+export async function getCollections(
+  first = 20
+): Promise<ShopifyOperationResult<Collection[]>> {
+  try {
+    const res = await shopifyQuery<CollectionsListResponse>({
+      query: COLLECTIONS_QUERY,
+      variables: { first },
+      operationName: OP_GET_COLLECTIONS
+    });
+
+    if (!res.data?.collections) {
+      return {
+        ok: false,
+        data: [],
+        error: { code: 'SHOPIFY_ERROR', message: 'Failed to fetch collections' },
+        status: 502
+      };
+    }
+
+    const collections = res.data.collections.edges.map(
+      (edge: { node: CollectionNode }) => mapCollection(edge.node)
+    );
+    return { ok: true, data: collections };
+  } catch (e) {
+    return wrapClientError(e, OP_GET_COLLECTIONS) as ShopifyOperationResult<Collection[]>;
+  }
+}
+
+const OP_GET_COLLECTION_BY_HANDLE = 'getCollectionByHandle';
+
+export async function getCollectionByHandle(
+  handle: string,
+  productsFirst = 50
+): Promise<ShopifyOperationResult<Collection | null>> {
+  try {
+    const res = await shopifyQuery<CollectionByHandleResponse>({
+      query: COLLECTION_BY_HANDLE_QUERY,
+      variables: { handle, productsFirst },
+      operationName: OP_GET_COLLECTION_BY_HANDLE
+    });
+
+    const node = res.data?.collection ?? null;
+    return {
+      ok: true,
+      data: node ? mapCollectionWithProducts(node) : null
+    };
+  } catch (e) {
+    return wrapClientError(e, OP_GET_COLLECTION_BY_HANDLE) as ShopifyOperationResult<Collection | null>;
   }
 }
 
