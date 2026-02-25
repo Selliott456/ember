@@ -1,11 +1,23 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { page } from '$app/stores';
 
 	let { data }: { data: PageData } = $props();
 
 	const collections = $derived(data.collections);
 	const error = $derived(data.error);
+	const canonical = $derived($page.url.origin + $page.url.pathname);
 </script>
+
+<svelte:head>
+	<title>Collections | Storefront</title>
+	<meta name="description" content="Browse our product collections." />
+	<link rel="canonical" href={canonical} />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Collections | Storefront" />
+	<meta property="og:description" content="Browse our product collections." />
+	<meta property="og:url" content={canonical} />
+</svelte:head>
 
 <main class="page">
 	<h1>Collections</h1>

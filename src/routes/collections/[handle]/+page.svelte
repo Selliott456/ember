@@ -1,17 +1,32 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { page } from '$app/stores';
+	import { excerpt } from '$lib/seo';
 
 	let { data }: { data: PageData } = $props();
 
 	const collection = $derived(data.collection);
 	const products = $derived(data.products);
 	const error = $derived(data.error);
+	const metaDescription = $derived(
+		collection ? excerpt(collection.description, 160) || collection.title : ''
+	);
+	const canonical = $derived($page.url.origin + $page.url.pathname);
 </script>
 
 <svelte:head>
 	{#if collection}
-		<title>{collection.title} | Collections</title>
-		<meta name="description" content={collection.description ?? collection.title} />
+		<title>{collection.title} | Collections | Storefront</title>
+		<meta name="description" content={metaDescription} />
+		<link rel="canonical" href={canonical} />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={collection.title} />
+		<meta property="og:description" content={metaDescription} />
+		<meta property="og:url" content={canonical} />
+		{#if collection.image}
+			<meta property="og:image" content={collection.image.url} />
+			<meta property="og:image:alt" content={collection.image.altText ?? collection.title} />
+		{/if}
 	{/if}
 </svelte:head>
 

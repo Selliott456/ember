@@ -6,7 +6,18 @@
 
 	$: products = data.products;
 	$: error = data.error;
+	$: canonical = $page.url.origin + $page.url.pathname;
 </script>
+
+<svelte:head>
+	<title>Storefront | Featured products</title>
+	<meta name="description" content="Featured products from our store." />
+	<link rel="canonical" href={canonical} />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Storefront | Featured products" />
+	<meta property="og:description" content="Featured products from our store." />
+	<meta property="og:url" content={canonical} />
+</svelte:head>
 
 <main class="page">
 	<section class="hero">

@@ -1,10 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { page } from '$app/stores';
 	import { cart } from '$lib/stores/cart';
+	import { excerpt } from '$lib/seo';
 
 	let { data }: { data: PageData } = $props();
 
 	const product = $derived(data.product);
+	const metaDescription = $derived(excerpt(product?.description, 160));
+	const canonical = $derived($page.url.origin + $page.url.pathname);
 
 	// Default to first *available* variant; if all sold out, leave null. Sync when product (page) changes.
 	let selectValue = $state('');
@@ -78,12 +82,15 @@
 
 <svelte:head>
 	<title>{product.title} | Storefront</title>
-	<meta name="description" content={product.description} />
+	<meta name="description" content={metaDescription || product.title} />
+	<link rel="canonical" href={canonical} />
 	<meta property="og:type" content="product" />
 	<meta property="og:title" content={product.title} />
-	<meta property="og:description" content={product.description} />
+	<meta property="og:description" content={metaDescription || product.title} />
+	<meta property="og:url" content={canonical} />
 	{#if product.featuredImage}
 		<meta property="og:image" content={product.featuredImage.url} />
+		<meta property="og:image:alt" content={product.featuredImage.altText ?? product.title} />
 	{/if}
 </svelte:head>
 

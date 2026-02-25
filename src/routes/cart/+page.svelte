@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { cart } from '$lib/stores/cart';
 	import { onMount } from 'svelte';
 	import { derived } from 'svelte/store';
@@ -9,6 +10,7 @@
 	});
 
 	const state = cart;
+	const canonical = derived(page, ($p) => $p.url.origin + $p.url.pathname);
 
 	const subtotal = derived(state, ($state) => $state.cart?.cost.subtotalAmount ?? null);
 
@@ -30,6 +32,16 @@
 		cart.clearError();
 	}
 </script>
+
+<svelte:head>
+	<title>Cart | Storefront</title>
+	<meta name="description" content="Your shopping cart. Review items and proceed to checkout." />
+	<link rel="canonical" href={$canonical} />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Cart | Storefront" />
+	<meta property="og:description" content="Your shopping cart. Review items and proceed to checkout." />
+	<meta property="og:url" content={$canonical} />
+</svelte:head>
 
 <main class="page">
 	<h1>Cart</h1>
