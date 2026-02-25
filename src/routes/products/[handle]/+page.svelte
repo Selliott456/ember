@@ -2,32 +2,71 @@
 	import type { PageData } from './$types';
 	import { cart } from '$lib/stores/cart';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 
-	const product = data.product;
+	const product = $derived(data.product);
 
-	let selectedVariantId: string | null =
-		product.variants.length > 0 ? product.variants[0].id : null;
-	let quantity = 1;
-	let submitting = false;
-	let message: string | null = null;
+	// Default to first *available* variant; if all sold out, leave null. Sync when product (page) changes.
+	let selectValue = $state('');
+	$effect(() => {
+		const p = data.product;
+		const first = p.variants.find((v) => v.availableForSale);
+		selectValue = first?.id ?? '';
+	});
+	const selectedVariantId = $derived(selectValue || null);
+	let quantity = $state(1);
+	let submitting = $state(false);
+	let message = $state<string | null>(null);
+
+	// Clamp quantity so it cannot go below 1 (handles typed values and edge cases).
+	$effect(() => {
+		if (typeof quantity !== 'number' || !Number.isInteger(quantity) || quantity < 1) {
+			quantity = 1;
+		}
+	});
+
+	const selectedVariant = $derived(
+		product.variants.find((v) => v.id === selectedVariantId)
+	);
+	const canAddToCart = $derived(
+		selectedVariantId != null &&
+			selectedVariant != null &&
+			selectedVariant.availableForSale &&
+			!submitting
+	);
+	const allSoldOut = $derived(
+		product.variants.length > 0 &&
+			product.variants.every((v) => !v.availableForSale)
+	);
 
 	async function handleAddToCart() {
 		message = null;
 
 		if (!selectedVariantId) {
-			message = 'Please select a variant.';
+			message = allSoldOut ? 'This product is currently sold out.' : 'Please select a variant.';
 			return;
 		}
 
-		if (!Number.isInteger(quantity) || quantity <= 0) {
-			message = 'Quantity must be a positive integer.';
+		const variant = product.variants.find((v) => v.id === selectedVariantId);
+		if (!variant) {
+			message = 'Please select a variant.';
+			return;
+		}
+		if (!variant.availableForSale) {
+			message = 'This variant is sold out.';
+			return;
+		}
+
+		const qty = Math.max(1, Math.floor(Number(quantity)) || 1);
+		if (!Number.isInteger(qty) || qty < 1) {
+			message = 'Quantity must be at least 1.';
 			return;
 		}
 
 		submitting = true;
 		try {
-			await cart.addToCart(selectedVariantId, quantity);
+			// merchandiseId is the variant's Storefront API id (GID).
+			await cart.addToCart(selectedVariantId, qty);
 			message = 'Added to cart.';
 		} catch (e) {
 			message = e instanceof Error ? e.message : 'Failed to add to cart.';
@@ -73,7 +112,8 @@
 			{#if product.variants.length > 0}
 				<label>
 					<span>Variant</span>
-					<select bind:value={selectedVariantId}>
+					<select bind:value={selectValue}>
+						<option value="">Choose variant</option>
 						{#each product.variants as variant}
 							<option value={variant.id} disabled={!variant.availableForSale}>
 								{variant.title} {!variant.availableForSale ? '(Sold out)' : ''}
@@ -93,8 +133,11 @@
 				/>
 			</label>
 
-			<button on:click|preventDefault={handleAddToCart} disabled={submitting}>
-				{submitting ? 'Adding…' : 'Add to cart'}
+			<button
+				onclick={(e) => { e.preventDefault(); handleAddToCart(); }}
+				disabled={!canAddToCart}
+			>
+				{allSoldOut ? 'Sold out' : submitting ? 'Adding…' : 'Add to cart'}
 			</button>
 
 			{#if message}
