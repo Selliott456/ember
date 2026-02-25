@@ -46,6 +46,15 @@ const initialState: CartState = {
 	error: null
 };
 
+/** Accept API error as { code, message } or legacy string. */
+function errorMessage(err: unknown): string {
+	if (err && typeof err === 'object' && 'message' in err) {
+		const m = (err as { message: unknown }).message;
+		if (typeof m === 'string') return m;
+	}
+	return typeof err === 'string' ? err : 'Request failed';
+}
+
 function createCartStore() {
 	const { subscribe, update, set } = writable<CartState>(initialState);
 
@@ -57,7 +66,7 @@ function createCartStore() {
 			const data = await res.json();
 
 			if (!data.ok) {
-				set({ cart: null, loading: false, error: data.error ?? 'Failed to load cart' });
+				set({ cart: null, loading: false, error: errorMessage(data.error) });
 				return;
 			}
 
@@ -84,7 +93,7 @@ function createCartStore() {
 			const data = await res.json();
 
 			if (!data.ok) {
-				update((state) => ({ ...state, loading: false, error: data.error ?? 'Add failed' }));
+				update((state) => ({ ...state, loading: false, error: errorMessage(data.error) }));
 				return;
 			}
 
@@ -114,7 +123,7 @@ function createCartStore() {
 				update((state) => ({
 					...state,
 					loading: false,
-					error: data.error ?? 'Update failed'
+					error: errorMessage(data.error)
 				}));
 				return;
 			}
@@ -145,7 +154,7 @@ function createCartStore() {
 				update((state) => ({
 					...state,
 					loading: false,
-					error: data.error ?? 'Remove failed'
+					error: errorMessage(data.error)
 				}));
 				return;
 			}
@@ -174,7 +183,7 @@ function createCartStore() {
 				update((state) => ({
 					...state,
 					loading: false,
-					error: data.error ?? 'Clear failed'
+					error: errorMessage(data.error)
 				}));
 				return;
 			}

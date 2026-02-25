@@ -1,4 +1,9 @@
-import { shopifyQuery, type ShopifyGraphQLError } from './client';
+import {
+  shopifyQuery,
+  ShopifyGraphQLClientError,
+  type ShopifyGraphQLError
+} from './client';
+import { logShopify } from './logger';
 import {
   PRODUCT_LIST_QUERY,
   PRODUCT_BY_HANDLE_QUERY,
@@ -16,6 +21,13 @@ import type {
   Money,
   ShopifyUserError
 } from './types';
+
+/** Structured error for API routes: code + message + suggested HTTP status. */
+export type ShopifyStructuredError = {
+  code: string;
+  message: string;
+  requestId?: string;
+};
 
 type ProductListResponse = {
   products: {
@@ -129,6 +141,10 @@ export type ShopifyOperationResult<T> = {
   data?: T;
   userErrors?: ShopifyUserError[];
   errors?: ShopifyGraphQLError[];
+  /** Set when ok is false; use for consistent API error JSON and status. */
+  error?: ShopifyStructuredError;
+  /** Suggested HTTP status (400 user/validation, 502 upstream). */
+  status?: number;
 };
 
 function mapProduct(node: ProductNode): Product {
@@ -192,6 +208,10 @@ function mapCart(node: CartNode): Cart {
   };
 }
 
+function userErrorMessage(userErrors: ShopifyUserError[]): string {
+  return userErrors.map((e) => e.message).join('; ') || 'Validation failed';
+}
+
 function extractMutationPayload<T extends { userErrors: ShopifyUserError[] }>(
   root: T | undefined,
   errors?: ShopifyGraphQLError[]
@@ -201,7 +221,12 @@ function extractMutationPayload<T extends { userErrors: ShopifyUserError[] }>(
       ok: false,
       data: undefined,
       userErrors: [],
-      errors: errors ?? [{ message: 'Unknown Shopify mutation error' }]
+      errors: errors ?? [{ message: 'Unknown Shopify mutation error' }],
+      error: {
+        code: 'SHOPIFY_ERROR',
+        message: errors?.map((e) => e.message).join('; ') ?? 'Unknown Shopify mutation error'
+      },
+      status: 502
     };
   }
 
@@ -211,110 +236,150 @@ function extractMutationPayload<T extends { userErrors: ShopifyUserError[] }>(
     ok: !hasUserErrors && !(errors && errors.length),
     data: root,
     userErrors: root.userErrors,
-    errors
+    errors,
+    error: hasUserErrors
+      ? { code: 'USER_ERROR', message: userErrorMessage(root.userErrors) }
+      : undefined,
+    status: hasUserErrors ? 400 : undefined
   };
 }
+
+function wrapClientError(e: unknown, operationName: string): ShopifyOperationResult<never> {
+  if (e instanceof ShopifyGraphQLClientError) {
+    const err = e as ShopifyGraphQLClientError;
+    logShopify('error', err.requestId, err.operationName ?? operationName, err.message, {
+      status: err.status,
+      errors: err.errors
+    });
+    return {
+      ok: false,
+      data: undefined,
+      errors: err.errors,
+      error: {
+        code: 'SHOPIFY_ERROR',
+        message: err.message,
+        requestId: err.requestId
+      },
+      status: err.status >= 400 && err.status < 500 ? err.status : 502
+    };
+  }
+  const message = e instanceof Error ? e.message : 'Unknown error';
+  logShopify('error', 'unknown', operationName, message);
+  return {
+    ok: false,
+    data: undefined,
+    error: { code: 'SHOPIFY_ERROR', message },
+    status: 502
+  };
+}
+
+const OP_GET_PRODUCTS = 'getProducts';
 
 export async function getProducts(
   first = 20
 ): Promise<ShopifyOperationResult<Product[]>> {
-  const res = await shopifyQuery<ProductListResponse>({
-    query: PRODUCT_LIST_QUERY,
-    variables: { first }
-  });
+  try {
+    const res = await shopifyQuery<ProductListResponse>({
+      query: PRODUCT_LIST_QUERY,
+      variables: { first },
+      operationName: OP_GET_PRODUCTS
+    });
 
-  if (!res.ok || !res.data?.products) {
-    return {
-      ok: false,
-      data: [],
-      errors: res.errors ?? [{ message: 'Failed to fetch products' }]
-    };
+    if (!res.data?.products) {
+      return {
+        ok: false,
+        data: [],
+        error: { code: 'SHOPIFY_ERROR', message: 'Failed to fetch products' },
+        status: 502
+      };
+    }
+
+    const products = res.data.products.edges.map(
+      (edge: { node: ProductNode }) => mapProduct(edge.node)
+    );
+    return { ok: true, data: products };
+  } catch (e) {
+    return wrapClientError(e, OP_GET_PRODUCTS) as ShopifyOperationResult<Product[]>;
   }
-
-  const products = res.data.products.edges.map(({ node }) => mapProduct(node));
-
-  return {
-    ok: true,
-    data: products
-  };
 }
+
+const OP_GET_PRODUCT_BY_HANDLE = 'getProductByHandle';
 
 export async function getProductByHandle(
   handle: string
 ): Promise<ShopifyOperationResult<Product | null>> {
-  const res = await shopifyQuery<ProductByHandleResponse>({
-    query: PRODUCT_BY_HANDLE_QUERY,
-    variables: { handle }
-  });
+  try {
+    const res = await shopifyQuery<ProductByHandleResponse>({
+      query: PRODUCT_BY_HANDLE_QUERY,
+      variables: { handle },
+      operationName: OP_GET_PRODUCT_BY_HANDLE
+    });
 
-  if (!res.ok) {
+    const productNode = res.data?.product ?? null;
     return {
-      ok: false,
-      data: null,
-      errors: res.errors ?? [{ message: 'Failed to fetch product' }]
+      ok: true,
+      data: productNode ? mapProduct(productNode) : null
     };
+  } catch (e) {
+    return wrapClientError(e, OP_GET_PRODUCT_BY_HANDLE) as ShopifyOperationResult<Product | null>;
   }
-
-  const productNode = res.data?.product ?? null;
-
-  return {
-    ok: true,
-    data: productNode ? mapProduct(productNode) : null
-  };
 }
+
+const OP_GET_CART = 'getCart';
 
 export async function getCart(
   cartId: string
 ): Promise<ShopifyOperationResult<Cart | null>> {
-  const res = await shopifyQuery<CartResponse>({
-    query: CART_QUERY,
-    variables: { id: cartId }
-  });
+  try {
+    const res = await shopifyQuery<CartResponse>({
+      query: CART_QUERY,
+      variables: { id: cartId },
+      operationName: OP_GET_CART
+    });
 
-  if (!res.ok) {
+    const cartNode = res.data?.cart ?? null;
     return {
-      ok: false,
-      data: null,
-      errors: res.errors ?? [{ message: 'Failed to fetch cart' }]
+      ok: true,
+      data: cartNode ? mapCart(cartNode) : null
     };
+  } catch (e) {
+    return wrapClientError(e, OP_GET_CART) as ShopifyOperationResult<Cart | null>;
   }
-
-  const cartNode = res.data?.cart ?? null;
-
-  return {
-    ok: true,
-    data: cartNode ? mapCart(cartNode) : null
-  };
 }
+
+const OP_CART_CREATE = 'cartCreate';
 
 export async function createCart(
   lines?: CartLineInput[]
 ): Promise<ShopifyOperationResult<Cart>> {
-  const res = await shopifyQuery<CartCreateResponse>({
-    query: CART_CREATE_MUTATION,
-    variables: {
-      input: {
-        lines
-      }
+  try {
+    const res = await shopifyQuery<CartCreateResponse>({
+      query: CART_CREATE_MUTATION,
+      variables: { input: { lines } },
+      operationName: OP_CART_CREATE
+    });
+
+    const payload = extractMutationPayload(res.data?.cartCreate, res.errors);
+
+    if (!payload.ok || !payload.data?.cart) {
+      return {
+        ok: false,
+        data: undefined,
+        userErrors: payload.userErrors,
+        errors: payload.errors,
+        error: payload.error,
+        status: payload.status ?? 502
+      };
     }
-  });
 
-  const payload = extractMutationPayload(res.data?.cartCreate, res.errors);
-
-  if (!payload.ok || !payload.data?.cart) {
     return {
-      ok: false,
-      data: undefined,
-      userErrors: payload.userErrors,
-      errors: payload.errors
+      ok: true,
+      data: mapCart(payload.data.cart),
+      userErrors: payload.userErrors
     };
+  } catch (e) {
+    return wrapClientError(e, OP_CART_CREATE) as ShopifyOperationResult<Cart>;
   }
-
-  return {
-    ok: true,
-    data: mapCart(payload.data.cart),
-    userErrors: payload.userErrors
-  };
 }
 
 export async function getOrCreateCart(
@@ -330,101 +395,119 @@ export async function getOrCreateCart(
   return createCart();
 }
 
+const OP_CART_LINES_ADD = 'cartLinesAdd';
+
 export async function addToCart(
   cartId: string,
   merchandiseId: string,
   quantity: number
 ): Promise<ShopifyOperationResult<Cart>> {
-  const res = await shopifyQuery<CartLinesChangeResponse>({
-    query: CART_LINES_ADD_MUTATION,
-    variables: {
-      cartId,
-      lines: [{ merchandiseId, quantity }]
+  try {
+    const res = await shopifyQuery<CartLinesChangeResponse>({
+      query: CART_LINES_ADD_MUTATION,
+      variables: { cartId, lines: [{ merchandiseId, quantity }] },
+      operationName: OP_CART_LINES_ADD
+    });
+
+    const payload = extractMutationPayload(res.data?.cartLinesAdd, res.errors);
+
+    if (!payload.ok || !payload.data?.cart) {
+      return {
+        ok: false,
+        data: undefined,
+        userErrors: payload.userErrors,
+        errors: payload.errors,
+        error: payload.error,
+        status: payload.status ?? 502
+      };
     }
-  });
 
-  const payload = extractMutationPayload(res.data?.cartLinesAdd, res.errors);
-
-  if (!payload.ok || !payload.data?.cart) {
     return {
-      ok: false,
-      data: undefined,
-      userErrors: payload.userErrors,
-      errors: payload.errors
+      ok: true,
+      data: mapCart(payload.data.cart),
+      userErrors: payload.userErrors
     };
+  } catch (e) {
+    return wrapClientError(e, OP_CART_LINES_ADD) as ShopifyOperationResult<Cart>;
   }
-
-  return {
-    ok: true,
-    data: mapCart(payload.data.cart),
-    userErrors: payload.userErrors
-  };
 }
+
+const OP_CART_LINES_UPDATE = 'cartLinesUpdate';
 
 export async function updateCartLines(
   cartId: string,
   lines: CartLineUpdateInput[]
 ): Promise<ShopifyOperationResult<Cart>> {
-  const res = await shopifyQuery<CartLinesChangeResponse>({
-    query: CART_LINES_UPDATE_MUTATION,
-    variables: {
-      cartId,
-      lines
+  try {
+    const res = await shopifyQuery<CartLinesChangeResponse>({
+      query: CART_LINES_UPDATE_MUTATION,
+      variables: { cartId, lines },
+      operationName: OP_CART_LINES_UPDATE
+    });
+
+    const payload = extractMutationPayload(
+      res.data?.cartLinesUpdate,
+      res.errors
+    );
+
+    if (!payload.ok || !payload.data?.cart) {
+      return {
+        ok: false,
+        data: undefined,
+        userErrors: payload.userErrors,
+        errors: payload.errors,
+        error: payload.error,
+        status: payload.status ?? 502
+      };
     }
-  });
 
-  const payload = extractMutationPayload(
-    res.data?.cartLinesUpdate,
-    res.errors
-  );
-
-  if (!payload.ok || !payload.data?.cart) {
     return {
-      ok: false,
-      data: undefined,
-      userErrors: payload.userErrors,
-      errors: payload.errors
+      ok: true,
+      data: mapCart(payload.data.cart),
+      userErrors: payload.userErrors
     };
+  } catch (e) {
+    return wrapClientError(e, OP_CART_LINES_UPDATE) as ShopifyOperationResult<Cart>;
   }
-
-  return {
-    ok: true,
-    data: mapCart(payload.data.cart),
-    userErrors: payload.userErrors
-  };
 }
+
+const OP_CART_LINES_REMOVE = 'cartLinesRemove';
 
 export async function removeFromCart(
   cartId: string,
   lineIds: string[]
 ): Promise<ShopifyOperationResult<Cart>> {
-  const res = await shopifyQuery<CartLinesChangeResponse>({
-    query: CART_LINES_REMOVE_MUTATION,
-    variables: {
-      cartId,
-      lineIds
+  try {
+    const res = await shopifyQuery<CartLinesChangeResponse>({
+      query: CART_LINES_REMOVE_MUTATION,
+      variables: { cartId, lineIds },
+      operationName: OP_CART_LINES_REMOVE
+    });
+
+    const payload = extractMutationPayload(
+      res.data?.cartLinesRemove,
+      res.errors
+    );
+
+    if (!payload.ok || !payload.data?.cart) {
+      return {
+        ok: false,
+        data: undefined,
+        userErrors: payload.userErrors,
+        errors: payload.errors,
+        error: payload.error,
+        status: payload.status ?? 502
+      };
     }
-  });
 
-  const payload = extractMutationPayload(
-    res.data?.cartLinesRemove,
-    res.errors
-  );
-
-  if (!payload.ok || !payload.data?.cart) {
     return {
-      ok: false,
-      data: undefined,
-      userErrors: payload.userErrors,
-      errors: payload.errors
+      ok: true,
+      data: mapCart(payload.data.cart),
+      userErrors: payload.userErrors
     };
+  } catch (e) {
+    return wrapClientError(e, OP_CART_LINES_REMOVE) as ShopifyOperationResult<Cart>;
   }
-
-  return {
-    ok: true,
-    data: mapCart(payload.data.cart),
-    userErrors: payload.userErrors
-  };
 }
 
 export type {

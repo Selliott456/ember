@@ -15,10 +15,7 @@ export const load: PageServerLoad = async (event) => {
 	if (!result.ok) {
 		return {
 			cart: null,
-			error:
-				result.userErrors?.map((e) => e.message).join('; ') ??
-				result.errors?.map((e) => e.message).join('; ') ??
-				'Failed to load cart'
+			error: result.error?.message ?? 'Failed to load cart'
 		};
 	}
 

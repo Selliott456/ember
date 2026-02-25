@@ -8,12 +8,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const result = await getProductByHandle(handle);
 
 	if (!result.ok) {
-		const message =
-			result.userErrors?.map((e) => e.message).join('; ') ??
-			result.errors?.map((e) => e.message).join('; ') ??
-			'Failed to load product';
-
-		throw error(500, message);
+		throw error(result.status ?? 500, result.error?.message ?? 'Failed to load product');
 	}
 
 	if (!result.data) {

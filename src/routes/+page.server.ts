@@ -9,10 +9,7 @@ export const load: PageServerLoad = async () => {
 	if (!result.ok) {
 		return {
 			products: [],
-			error:
-				result.userErrors?.map((e) => e.message).join('; ') ??
-				result.errors?.map((e) => e.message).join('; ') ??
-				'Failed to load products'
+			error: result.error?.message ?? 'Failed to load products'
 		};
 	}
 
