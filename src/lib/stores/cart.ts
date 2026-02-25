@@ -38,12 +38,15 @@ type CartState = {
 	cart: Cart | null;
 	loading: boolean;
 	error: string | null;
+	/** Line id when update/remove in progress, 'clear' when clear in progress. */
+	actionInProgress: string | null;
 };
 
 const initialState: CartState = {
 	cart: null,
 	loading: false,
-	error: null
+	error: null,
+	actionInProgress: null
 };
 
 /** Accept API error as { code, message } or legacy string. */
@@ -118,7 +121,11 @@ function createCartStore() {
 	}
 
 	async function updateLine(lineId: string, quantity: number) {
-		update((state) => ({ ...state, loading: true, error: null }));
+		if (quantity === 0) {
+			await removeLine(lineId);
+			return;
+		}
+		update((state) => ({ ...state, actionInProgress: lineId, error: null }));
 
 		try {
 			const res = await fetch('/api/cart/update', {
@@ -132,25 +139,25 @@ function createCartStore() {
 			if (!data.ok) {
 				update((state) => ({
 					...state,
-					loading: false,
+					actionInProgress: null,
 					error: errorMessage(data.error),
 					...(isCartNotFoundError(data) && { cart: null })
 				}));
 				return;
 			}
 
-			set({ cart: data.cart, loading: false, error: null });
+			set({ cart: data.cart, actionInProgress: null, error: null });
 		} catch (e) {
 			update((state) => ({
 				...state,
-				loading: false,
+				actionInProgress: null,
 				error: e instanceof Error ? e.message : 'Update failed'
 			}));
 		}
 	}
 
 	async function removeLine(lineId: string) {
-		update((state) => ({ ...state, loading: true, error: null }));
+		update((state) => ({ ...state, actionInProgress: lineId, error: null }));
 
 		try {
 			const res = await fetch('/api/cart/remove', {
@@ -164,25 +171,25 @@ function createCartStore() {
 			if (!data.ok) {
 				update((state) => ({
 					...state,
-					loading: false,
+					actionInProgress: null,
 					error: errorMessage(data.error),
 					...(isCartNotFoundError(data) && { cart: null })
 				}));
 				return;
 			}
 
-			set({ cart: data.cart, loading: false, error: null });
+			set({ cart: data.cart, actionInProgress: null, error: null });
 		} catch (e) {
 			update((state) => ({
 				...state,
-				loading: false,
+				actionInProgress: null,
 				error: e instanceof Error ? e.message : 'Remove failed'
 			}));
 		}
 	}
 
 	async function clearCart() {
-		update((state) => ({ ...state, loading: true, error: null }));
+		update((state) => ({ ...state, actionInProgress: 'clear', error: null }));
 
 		try {
 			const res = await fetch('/api/cart/clear', {
@@ -194,20 +201,24 @@ function createCartStore() {
 			if (!data.ok) {
 				update((state) => ({
 					...state,
-					loading: false,
+					actionInProgress: null,
 					error: errorMessage(data.error)
 				}));
 				return;
 			}
 
-			set({ cart: data.cart, loading: false, error: null });
+			set({ cart: data.cart, actionInProgress: null, error: null });
 		} catch (e) {
 			update((state) => ({
 				...state,
-				loading: false,
+				actionInProgress: null,
 				error: e instanceof Error ? e.message : 'Clear failed'
 			}));
 		}
+	}
+
+	function clearError() {
+		update((state) => ({ ...state, error: null }));
 	}
 
 	return {
@@ -216,7 +227,8 @@ function createCartStore() {
 		addToCart,
 		updateLine,
 		removeLine,
-		clearCart
+		clearCart,
+		clearError
 	};
 }
 

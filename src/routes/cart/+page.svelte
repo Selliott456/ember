@@ -12,8 +12,9 @@
 
 	const subtotal = derived(state, ($state) => $state.cart?.cost.subtotalAmount ?? null);
 
+	/** Quantity 0 is handled as remove by the store. */
 	async function handleQuantityChange(lineId: string, quantity: number) {
-		if (!Number.isInteger(quantity) || quantity <= 0) return;
+		if (typeof quantity !== 'number' || !Number.isInteger(quantity) || quantity < 0) return;
 		await cart.updateLine(lineId, quantity);
 	}
 
@@ -23,6 +24,10 @@
 
 	async function handleClear() {
 		await cart.clearCart();
+	}
+
+	function dismissError() {
+		cart.clearError();
 	}
 </script>
 
@@ -36,7 +41,10 @@
 	{/if}
 
 	{#if $state.error}
-		<p class="error">{$state.error}</p>
+		<div class="toast toast--error" role="alert">
+			<span class="toast-message">{$state.error}</span>
+			<button type="button" class="toast-dismiss" onclick={dismissError} aria-label="Dismiss">×</button>
+		</div>
 	{/if}
 
 	{#if $state.cart && $state.cart.lines.length > 0}
@@ -67,10 +75,11 @@
 						<td>
 							<input
 								type="number"
-								min="1"
+								min="0"
 								step="1"
 								value={line.quantity}
-								on:change={(event) =>
+								disabled={$state.actionInProgress === line.id}
+								onchange={(event) =>
 									handleQuantityChange(line.id, Number((event.currentTarget as HTMLInputElement).value))}
 							/>
 						</td>
@@ -80,7 +89,13 @@
 							{line.cost.subtotalAmount.currencyCode}
 						</td>
 						<td>
-							<button type="button" on:click={() => handleRemove(line.id)}>Remove</button>
+							<button
+								type="button"
+								disabled={$state.actionInProgress === line.id}
+								onclick={() => handleRemove(line.id)}
+							>
+								{$state.actionInProgress === line.id ? '…' : 'Remove'}
+							</button>
 						</td>
 					</tr>
 				{/each}
@@ -100,9 +115,17 @@
 			{/if}
 
 			<div class="actions">
-				<button type="button" on:click={handleClear}>Clear cart</button>
+				<button
+					type="button"
+					disabled={$state.actionInProgress === 'clear'}
+					onclick={handleClear}
+				>
+					{$state.actionInProgress === 'clear' ? 'Clearing…' : 'Clear cart'}
+				</button>
 				{#if $state.cart.checkoutUrl}
 					<a class="checkout" href={$state.cart.checkoutUrl}>Checkout</a>
+				{:else}
+					<span class="checkout checkout--disabled" aria-disabled="true">Checkout</span>
 				{/if}
 			</div>
 		</div>
@@ -190,9 +213,47 @@
 		text-decoration: none;
 	}
 
-	.error {
-		color: #b00020;
+	.checkout--disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+		pointer-events: none;
+	}
+
+	.toast {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.6rem 0.75rem;
 		margin-bottom: 1rem;
+		border-radius: 0.25rem;
+		font-size: 0.9rem;
+	}
+
+	.toast--error {
+		background: #fef2f2;
+		color: #b00020;
+		border: 1px solid #fecaca;
+	}
+
+	.toast-message {
+		flex: 1;
+	}
+
+	.toast-dismiss {
+		flex-shrink: 0;
+		padding: 0.15rem 0.4rem;
+		border: none;
+		background: transparent;
+		color: inherit;
+		font-size: 1.25rem;
+		line-height: 1;
+		cursor: pointer;
+		border-radius: 0.2rem;
+	}
+
+	.toast-dismiss:hover {
+		background: rgba(0, 0, 0, 0.06);
 	}
 
 	@media (max-width: 640px) {
