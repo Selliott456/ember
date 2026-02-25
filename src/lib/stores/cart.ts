@@ -91,10 +91,18 @@ function createCartStore() {
 	async function addToCart(merchandiseId: string, quantity: number) {
 		update((state) => ({ ...state, loading: true, error: null }));
 
+		const requestId =
+			typeof crypto !== 'undefined' && crypto.randomUUID
+				? crypto.randomUUID()
+				: `add-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
 		try {
 			const res = await fetch('/api/cart/add', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					'X-Request-Id': requestId
+				},
 				body: JSON.stringify({ merchandiseId, quantity })
 			});
 

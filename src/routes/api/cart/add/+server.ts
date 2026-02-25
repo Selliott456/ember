@@ -4,23 +4,44 @@ import { addToCart, createCart, getOrCreateCart } from '$lib/server/shopify';
 import { getCartId, setCartId, clearCartId, isCartNotFound } from '$lib/server/cartCookie';
 import { apiError } from '$lib/server/apiResponse';
 
+const ADD_REPLAY_TTL_MS = 5_000;
+
+/** In-memory replay cache for add-to-cart by X-Request-Id (dedupe double-clicks). Single-node only. */
+const addReplayCache = new Map<
+	string,
+	{ body: { ok: true; cart: unknown }; status: number; timestamp: number }
+>();
+
+function pruneAddReplayCache(now: number) {
+	for (const [id, entry] of addReplayCache.entries()) {
+		if (now - entry.timestamp > ADD_REPLAY_TTL_MS) addReplayCache.delete(id);
+	}
+}
+
 type AddBody = {
 	merchandiseId?: unknown;
 	quantity?: unknown;
 };
 
 export const POST: RequestHandler = async (event) => {
+	const requestId = event.request.headers.get('X-Request-Id')?.trim();
+	const now = Date.now();
+	if (requestId) {
+		const cached = addReplayCache.get(requestId);
+		if (cached && now - cached.timestamp <= ADD_REPLAY_TTL_MS) {
+			return json(cached.body, { status: cached.status });
+		}
+	}
+
 	const body = (await event.request.json().catch(() => ({}))) as AddBody;
 
 	if (typeof body.merchandiseId !== 'string' || body.merchandiseId.trim().length === 0) {
 		return apiError({ code: 'VALIDATION_ERROR', message: 'Invalid merchandiseId' }, 400);
 	}
 
-	if (
-		typeof body.quantity !== 'number' ||
-		!Number.isInteger(body.quantity) ||
-		body.quantity <= 0
-	) {
+	const qty =
+		typeof body.quantity === 'string' ? Number(body.quantity) : body.quantity;
+	if (typeof qty !== 'number' || !Number.isInteger(qty) || qty <= 0) {
 		return apiError({ code: 'VALIDATION_ERROR', message: 'Invalid quantity' }, 400);
 	}
 
@@ -34,12 +55,10 @@ export const POST: RequestHandler = async (event) => {
 		);
 	}
 
-	setCartId(event, cartResult.data.id);
-
 	let addResult = await addToCart(
 		cartResult.data.id,
 		body.merchandiseId,
-		body.quantity
+		qty
 	);
 
 	// Stale cart: add failed because cart not found; recreate and retry once.
@@ -52,11 +71,10 @@ export const POST: RequestHandler = async (event) => {
 				createResult.status ?? 502
 			);
 		}
-		setCartId(event, createResult.data.id);
 		addResult = await addToCart(
 			createResult.data.id,
 			body.merchandiseId,
-			body.quantity
+			qty
 		);
 	}
 
@@ -67,7 +85,19 @@ export const POST: RequestHandler = async (event) => {
 		);
 	}
 
+	// Only set cart cookie after a successful add (or after successful recreate+retry).
 	setCartId(event, addResult.data.id);
-	return json({ ok: true, cart: addResult.data });
+
+	const responseBody = { ok: true as const, cart: addResult.data };
+	if (requestId) {
+		const ts = Date.now();
+		addReplayCache.set(requestId, {
+			body: responseBody,
+			status: 200,
+			timestamp: ts
+		});
+		pruneAddReplayCache(ts);
+	}
+	return json(responseBody);
 };
 

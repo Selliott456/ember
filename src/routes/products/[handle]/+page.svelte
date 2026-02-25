@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { cart } from '$lib/stores/cart';
 	import { excerpt } from '$lib/seo';
+	import { formatPrice } from '$lib/formatPrice';
 
 	let { data }: { data: PageData } = $props();
 
@@ -42,6 +43,20 @@
 		product.variants.length > 0 &&
 			product.variants.every((v) => !v.availableForSale)
 	);
+
+	// Gallery: product.images when present, otherwise fallback to featuredImage as single image.
+	const galleryImages = $derived(
+		product.images?.length
+			? product.images
+			: product.featuredImage
+				? [{ url: product.featuredImage.url, altText: product.featuredImage.altText }]
+				: []
+	);
+	let galleryIndex = $state(0);
+	$effect(() => {
+		const len = galleryImages.length;
+		if (len && galleryIndex >= len) galleryIndex = 0;
+	});
 
 	async function handleAddToCart() {
 		message = null;
@@ -88,9 +103,9 @@
 	<meta property="og:title" content={product.title} />
 	<meta property="og:description" content={metaDescription || product.title} />
 	<meta property="og:url" content={canonical} />
-	{#if product.featuredImage}
-		<meta property="og:image" content={product.featuredImage.url} />
-		<meta property="og:image:alt" content={product.featuredImage.altText ?? product.title} />
+	{#if galleryImages.length > 0}
+		<meta property="og:image" content={galleryImages[0].url} />
+		<meta property="og:image:alt" content={galleryImages[0].altText ?? product.title} />
 	{/if}
 </svelte:head>
 
@@ -98,22 +113,37 @@
 	<a class="back" href="/">← Back to products</a>
 
 	<section class="product">
-		{#if product.featuredImage}
-			<div class="image">
-				<img
-					src={product.featuredImage.url}
-					alt={product.featuredImage.altText ?? product.title}
-					loading="lazy"
-				/>
+		{#if galleryImages.length > 0}
+			<div class="gallery">
+				<div class="gallery-main">
+					<img
+						src={galleryImages[galleryIndex].url}
+						alt={galleryImages[galleryIndex].altText ?? product.title}
+						loading={galleryIndex === 0 ? 'eager' : 'lazy'}
+					/>
+				</div>
+				{#if galleryImages.length > 1}
+					<div class="gallery-thumbs">
+						{#each galleryImages as img, i}
+							<button
+								type="button"
+								class="thumb"
+								class:active={i === galleryIndex}
+								aria-label="View image {i + 1}"
+								onclick={() => (galleryIndex = i)}
+							>
+								<img src={img.url} alt="" loading="lazy" />
+							</button>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		{/if}
 
 		<div class="details">
 			<h1>{product.title}</h1>
 			<p class="price">
-				{product.priceRange.minVariantPrice.amount}
-				{' '}
-				{product.priceRange.minVariantPrice.currencyCode}
+				{formatPrice(product.priceRange.minVariantPrice.amount, product.priceRange.minVariantPrice.currencyCode)}
 			</p>
 
 			{#if product.variants.length > 0}
@@ -181,9 +211,37 @@
 		align-items: flex-start;
 	}
 
-	.image img {
+	.gallery-main img {
 		width: 100%;
 		border-radius: 0.5rem;
+		object-fit: cover;
+	}
+
+	.gallery-thumbs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 0.75rem;
+	}
+
+	.gallery-thumbs .thumb {
+		width: 3rem;
+		height: 3rem;
+		padding: 0;
+		border: 2px solid #e5e7eb;
+		border-radius: 0.25rem;
+		background: none;
+		cursor: pointer;
+		overflow: hidden;
+	}
+
+	.gallery-thumbs .thumb.active {
+		border-color: #111827;
+	}
+
+	.gallery-thumbs .thumb img {
+		width: 100%;
+		height: 100%;
 		object-fit: cover;
 	}
 

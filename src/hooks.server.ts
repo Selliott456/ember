@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { shopifyConfig } from '$lib/config/shopify';
+import { shopifyConfig } from '$lib/server/config/shopify';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const cartId = event.cookies.get(shopifyConfig.cartCookieName) ?? null;

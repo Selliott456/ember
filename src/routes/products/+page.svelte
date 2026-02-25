@@ -1,53 +1,36 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
-	import { excerpt } from '$lib/seo';
 	import { formatPrice } from '$lib/formatPrice';
 
 	let { data }: { data: PageData } = $props();
 
-	const collection = $derived(data.collection);
 	const products = $derived(data.products);
 	const error = $derived(data.error);
-	const metaDescription = $derived(
-		collection ? excerpt(collection.description, 160) || collection.title : ''
-	);
 	const canonical = $derived($page.url.origin + $page.url.pathname);
 </script>
 
 <svelte:head>
-	{#if collection}
-		<title>{collection.title} | Collections | Storefront</title>
-		<meta name="description" content={metaDescription} />
-		<link rel="canonical" href={canonical} />
-		<meta property="og:type" content="website" />
-		<meta property="og:title" content={collection.title} />
-		<meta property="og:description" content={metaDescription} />
-		<meta property="og:url" content={canonical} />
-		{#if collection.image}
-			<meta property="og:image" content={collection.image.url} />
-			<meta property="og:image:alt" content={collection.image.altText ?? collection.title} />
-		{/if}
-	{/if}
+	<title>All products | Storefront</title>
+	<meta name="description" content="Browse all products." />
+	<link rel="canonical" href={canonical} />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="All products | Storefront" />
+	<meta property="og:description" content="Browse all products." />
+	<meta property="og:url" content={canonical} />
 </svelte:head>
 
 <main class="page">
-	<a class="back" href="/collections">← All collections</a>
-
-	{#if collection}
-		<h1>{collection.title}</h1>
-		{#if collection.description}
-			<p class="description">{collection.description}</p>
-		{/if}
-	{/if}
+	<h1>All products</h1>
+	<a class="back" href="/">← Back to home</a>
 
 	{#if error}
 		<p class="error">{error}</p>
 	{/if}
 
 	{#if products.length === 0 && !error}
-		<p>No products in this collection.</p>
-	{:else if products.length > 0}
+		<p>No products found.</p>
+	{:else}
 		<ul class="product-grid">
 			{#each products as product}
 				<li class="product-card">
@@ -82,15 +65,6 @@
 		margin-bottom: 1.5rem;
 		text-decoration: none;
 		color: #444;
-	}
-
-	h1 {
-		margin-bottom: 0.5rem;
-	}
-
-	.description {
-		margin-bottom: 1.5rem;
-		color: #555;
 	}
 
 	.product-grid {

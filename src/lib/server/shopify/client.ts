@@ -1,4 +1,4 @@
-import { shopifyConfig } from '$lib/config/shopify';
+import { shopifyConfig } from '$lib/server/config/shopify';
 import { logShopify } from './logger';
 
 const SHOPIFY_GRAPHQL_ENDPOINT = `https://${shopifyConfig.storeDomain}/api/${shopifyConfig.apiVersion}/graphql.json`;
@@ -53,11 +53,18 @@ export async function shopifyGraphQL<Data, Variables = Record<string, unknown>>(
 
   logShopify('info', requestId, operationName, 'request start');
 
+  const authHeaderName =
+    shopifyConfig.storefrontTokenMode === 'private'
+      ? 'Shopify-Storefront-Private-Token'
+      : 'X-Shopify-Storefront-Access-Token';
+
+  // Required headers and auth first; then extraHeaders; then re-apply auth so extraHeaders cannot override it.
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-Shopify-Storefront-Access-Token': shopifyConfig.storefrontToken,
-    ...extraHeaders
+    [authHeaderName]: shopifyConfig.storefrontToken,
+    ...extraHeaders,
+    [authHeaderName]: shopifyConfig.storefrontToken
   };
 
   const res = await fetch(SHOPIFY_GRAPHQL_ENDPOINT, {
@@ -65,7 +72,8 @@ export async function shopifyGraphQL<Data, Variables = Record<string, unknown>>(
     headers,
     body: JSON.stringify({
       query,
-      variables: variables ?? undefined
+      variables: variables ?? undefined,
+      operationName
     })
   });
 
@@ -111,9 +119,11 @@ export async function shopifyGraphQL<Data, Variables = Record<string, unknown>>(
   if (errors?.length) {
     const message = errors.map((e) => e.message).join('; ');
     logShopify('error', requestId, operationName, message, { errors });
+    // Semantic failure: use 502 so routes don't get 200 for GraphQL errors.
+    const status = res.ok ? 502 : res.status;
     throw new ShopifyGraphQLClientError(
       message,
-      res.status,
+      status,
       errors,
       requestId,
       operationName,

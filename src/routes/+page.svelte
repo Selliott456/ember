@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
+	import { formatPrice } from '$lib/formatPrice';
 
 	export let data: PageData;
 
@@ -45,9 +46,7 @@
 						{/if}
 						<h2>{product.title}</h2>
 						<p class="price">
-							{product.priceRange.minVariantPrice.amount}
-							{' '}
-							{product.priceRange.minVariantPrice.currencyCode}
+							{formatPrice(product.priceRange.minVariantPrice.amount, product.priceRange.minVariantPrice.currencyCode)}
 						</p>
 					</a>
 				</li>

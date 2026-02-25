@@ -3,6 +3,13 @@ export type Money = {
   currencyCode: string;
 };
 
+export type ProductImage = {
+  url: string;
+  altText: string | null;
+  width?: number;
+  height?: number;
+};
+
 export type ProductVariant = {
   id: string;
   title: string;
@@ -24,6 +31,8 @@ export type Product = {
     url: string;
     altText: string | null;
   };
+  /** Product images (from images(first: N)); detail page uses full set, list/collection may have first 2. */
+  images?: ProductImage[];
   priceRange: {
     minVariantPrice: Money;
   };

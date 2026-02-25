@@ -24,6 +24,7 @@ import type {
   Money,
   ShopifyUserError
 } from './types';
+import { isCartNotFoundFromMessage } from '$lib/server/cartCookie';
 
 /** Structured error for API routes: code + message + suggested HTTP status. */
 export type ShopifyStructuredError = {
@@ -95,6 +96,13 @@ type CartLinesChangeResponse = {
   };
 };
 
+type ProductImageNode = {
+  url: string;
+  altText: string | null;
+  width?: number;
+  height?: number;
+};
+
 type ProductNode = {
   id: string;
   handle: string;
@@ -104,6 +112,9 @@ type ProductNode = {
     url: string;
     altText: string | null;
   } | null;
+  images?: {
+    edges: { node: ProductImageNode }[];
+  };
   priceRange: {
     minVariantPrice: Money;
   };
@@ -178,6 +189,13 @@ export type ShopifyOperationResult<T> = {
 };
 
 function mapProduct(node: ProductNode): Product {
+  const images =
+    node.images?.edges?.map(({ node: img }) => ({
+      url: img.url,
+      altText: img.altText,
+      ...(img.width != null && { width: img.width }),
+      ...(img.height != null && { height: img.height })
+    })) ?? undefined;
   return {
     id: node.id,
     handle: node.handle,
@@ -189,6 +207,7 @@ function mapProduct(node: ProductNode): Product {
           altText: node.featuredImage.altText
         }
       : undefined,
+    images: images?.length ? images : undefined,
     priceRange: {
       minVariantPrice: node.priceRange.minVariantPrice
     },
@@ -266,30 +285,61 @@ function extractMutationPayload<T extends { userErrors: ShopifyUserError[] }>(
   errors?: ShopifyGraphQLError[]
 ): ShopifyOperationResult<T> {
   if (!root) {
+    const message = errors?.map((e) => e.message).join('; ') ?? 'Unknown Shopify mutation error';
+    const cartNotFound = isCartNotFoundFromMessage(undefined, errors);
     return {
       ok: false,
       data: undefined,
       userErrors: [],
       errors: errors ?? [{ message: 'Unknown Shopify mutation error' }],
       error: {
-        code: 'SHOPIFY_ERROR',
-        message: errors?.map((e) => e.message).join('; ') ?? 'Unknown Shopify mutation error'
+        code: cartNotFound ? 'CART_NOT_FOUND' : 'SHOPIFY_ERROR',
+        message
       },
-      status: 502
+      status: cartNotFound ? 404 : 502
     };
   }
 
   const hasUserErrors = root.userErrors && root.userErrors.length > 0;
+  const hasGraphQLErrors = Boolean(errors?.length);
 
+  if (hasUserErrors) {
+    const message = userErrorMessage(root.userErrors);
+    const cartNotFound = isCartNotFoundFromMessage(undefined, root.userErrors);
+    return {
+      ok: false,
+      data: root,
+      userErrors: root.userErrors,
+      errors,
+      error: {
+        code: cartNotFound ? 'CART_NOT_FOUND' : 'USER_ERROR',
+        message
+      },
+      status: cartNotFound ? 404 : 400
+    };
+  }
+  if (hasGraphQLErrors) {
+    const message = errors!.map((e) => e.message).join('; ') || 'GraphQL error';
+    const cartNotFound = isCartNotFoundFromMessage(undefined, errors ?? undefined);
+    return {
+      ok: false,
+      data: root,
+      userErrors: root.userErrors,
+      errors,
+      error: {
+        code: cartNotFound ? 'CART_NOT_FOUND' : 'SHOPIFY_ERROR',
+        message
+      },
+      status: cartNotFound ? 404 : 502
+    };
+  }
   return {
-    ok: !hasUserErrors && !(errors && errors.length),
+    ok: true,
     data: root,
     userErrors: root.userErrors,
-    errors,
-    error: hasUserErrors
-      ? { code: 'USER_ERROR', message: userErrorMessage(root.userErrors) }
-      : undefined,
-    status: hasUserErrors ? 400 : undefined
+    errors: undefined,
+    error: undefined,
+    status: undefined
   };
 }
 
@@ -300,16 +350,17 @@ function wrapClientError(e: unknown, operationName: string): ShopifyOperationRes
       status: err.status,
       errors: err.errors
     });
+    const cartNotFound = isCartNotFoundFromMessage(err.message, err.errors);
     return {
       ok: false,
       data: undefined,
       errors: err.errors,
       error: {
-        code: 'SHOPIFY_ERROR',
+        code: cartNotFound ? 'CART_NOT_FOUND' : 'SHOPIFY_ERROR',
         message: err.message,
         requestId: err.requestId
       },
-      status: err.status >= 400 && err.status < 500 ? err.status : 502
+      status: cartNotFound ? 404 : (err.status >= 400 && err.status < 500 ? err.status : 502)
     };
   }
   const message = e instanceof Error ? e.message : 'Unknown error';
@@ -322,7 +373,7 @@ function wrapClientError(e: unknown, operationName: string): ShopifyOperationRes
   };
 }
 
-const OP_GET_PRODUCTS = 'getProducts';
+const OP_GET_PRODUCTS = 'ProductList';
 
 export async function getProducts(
   first = 20
@@ -352,7 +403,7 @@ export async function getProducts(
   }
 }
 
-const OP_GET_PRODUCT_BY_HANDLE = 'getProductByHandle';
+const OP_GET_PRODUCT_BY_HANDLE = 'ProductByHandle';
 
 export async function getProductByHandle(
   handle: string
@@ -374,7 +425,7 @@ export async function getProductByHandle(
   }
 }
 
-const OP_GET_COLLECTIONS = 'getCollections';
+const OP_GET_COLLECTIONS = 'CollectionsList';
 
 export async function getCollections(
   first = 20
@@ -404,7 +455,7 @@ export async function getCollections(
   }
 }
 
-const OP_GET_COLLECTION_BY_HANDLE = 'getCollectionByHandle';
+const OP_GET_COLLECTION_BY_HANDLE = 'CollectionByHandle';
 
 export async function getCollectionByHandle(
   handle: string,
@@ -427,7 +478,7 @@ export async function getCollectionByHandle(
   }
 }
 
-const OP_GET_CART = 'getCart';
+const OP_GET_CART = 'CartQuery';
 
 export async function getCart(
   cartId: string
@@ -449,7 +500,7 @@ export async function getCart(
   }
 }
 
-const OP_CART_CREATE = 'cartCreate';
+const OP_CART_CREATE = 'CartCreate';
 
 export async function createCart(
   lines?: CartLineInput[]
@@ -497,7 +548,7 @@ export async function getOrCreateCart(
   return createCart();
 }
 
-const OP_CART_LINES_ADD = 'cartLinesAdd';
+const OP_CART_LINES_ADD = 'CartLinesAdd';
 
 export async function addToCart(
   cartId: string,
@@ -534,7 +585,7 @@ export async function addToCart(
   }
 }
 
-const OP_CART_LINES_UPDATE = 'cartLinesUpdate';
+const OP_CART_LINES_UPDATE = 'CartLinesUpdate';
 
 export async function updateCartLines(
   cartId: string,
@@ -573,7 +624,7 @@ export async function updateCartLines(
   }
 }
 
-const OP_CART_LINES_REMOVE = 'cartLinesRemove';
+const OP_CART_LINES_REMOVE = 'CartLinesRemove';
 
 export async function removeFromCart(
   cartId: string,

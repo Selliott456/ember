@@ -11,6 +11,14 @@ export const PRODUCT_LIST_QUERY = `
             url
             altText
           }
+          images(first: 2) {
+            edges {
+              node {
+                url
+                altText
+              }
+            }
+          }
           priceRange {
             minVariantPrice {
               amount
@@ -46,6 +54,16 @@ export const PRODUCT_BY_HANDLE_QUERY = `
       featuredImage {
         url
         altText
+      }
+      images(first: 20) {
+        edges {
+          node {
+            url
+            altText
+            width
+            height
+          }
+        }
       }
       priceRange {
         minVariantPrice {
@@ -236,6 +254,14 @@ const COLLECTION_PRODUCT_FIELDS = `
     url
     altText
   }
+  images(first: 2) {
+    edges {
+      node {
+        url
+        altText
+      }
+    }
+  }
   priceRange {
     minVariantPrice {
       amount
@@ -293,6 +319,15 @@ export const COLLECTION_BY_HANDLE_QUERY = `
           }
         }
       }
+    }
+  }
+`;
+
+/** Minimal query for debug health check (shop name). */
+export const SHOP_HEALTH_QUERY = `
+  query ShopHealth {
+    shop {
+      name
     }
   }
 `;

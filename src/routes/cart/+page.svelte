@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { cart } from '$lib/stores/cart';
+	import { formatPrice } from '$lib/formatPrice';
 	import { onMount } from 'svelte';
 	import { derived } from 'svelte/store';
 
@@ -80,9 +81,7 @@
 							</div>
 						</td>
 						<td>
-							{line.merchandise.price.amount}
-							{' '}
-							{line.merchandise.price.currencyCode}
+							{formatPrice(line.merchandise.price.amount, line.merchandise.price.currencyCode)}
 						</td>
 						<td>
 							<input
@@ -96,9 +95,7 @@
 							/>
 						</td>
 						<td>
-							{line.cost.subtotalAmount.amount}
-							{' '}
-							{line.cost.subtotalAmount.currencyCode}
+							{formatPrice(line.cost.subtotalAmount.amount, line.cost.subtotalAmount.currencyCode)}
 						</td>
 						<td>
 							<button
@@ -119,9 +116,7 @@
 				<p class="subtotal">
 					Subtotal:
 					<strong>
-						{$subtotal.amount}
-						{' '}
-						{$subtotal.currencyCode}
+						{formatPrice($subtotal.amount, $subtotal.currencyCode)}
 					</strong>
 				</p>
 			{/if}
