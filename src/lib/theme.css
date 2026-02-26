@@ -327,13 +327,9 @@ textarea:focus-visible {
   position: sticky;
   top: 0;
   z-index: var(--z-nav);
-  border-bottom: 1px solid var(--color-border-subtle);
-  background: linear-gradient(
-    to bottom,
-    rgba(5, 6, 10, 0.96),
-    rgba(5, 6, 10, 0.94)
-  );
-  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-brand-ink);
+  background-color: var(--color-brand-ink);
+  color: #ffffff;
 }
 
 .site-header-inner {
@@ -348,8 +344,25 @@ textarea:focus-visible {
 
 .brand-mark {
   display: flex;
-  align-items: baseline;
-  gap: 0.3rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-logo-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.brand-logo {
+  display: block;
+  height: 36px;
+  width: auto;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .brand-wordmark {
@@ -357,13 +370,14 @@ textarea:focus-visible {
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  color: #ffffff;
 }
 
 .brand-sub {
   font-size: 0.7rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--color-text-soft);
+  color: var(--color-brand-mist);
 }
 
 .site-nav {
@@ -376,20 +390,20 @@ textarea:focus-visible {
 }
 
 .site-nav a {
-  color: var(--color-text-soft);
+  color: var(--color-brand-mist);
   text-decoration: none;
   padding: 0.25rem 0;
   border-bottom: 1px solid transparent;
 }
 
 .site-nav a:hover {
-  color: var(--color-text);
-  border-bottom-color: var(--color-border);
+  color: #ffffff;
+  border-bottom-color: var(--color-brand-gold);
 }
 
 .site-nav a[data-active='true'] {
-  color: var(--color-accent);
-  border-bottom-color: var(--color-accent);
+  color: var(--color-brand-gold);
+  border-bottom-color: var(--color-brand-gold);
 }
 
 /* Modal / drawer primitives (not yet wired) */

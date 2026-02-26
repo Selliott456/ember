@@ -16,8 +16,14 @@
 	<header class="site-header">
 		<div class="site-header-inner">
 			<a href="/" class="brand-mark" aria-label="Ember storefront home">
-				<span class="brand-wordmark">EMBER</span>
-				<span class="brand-sub">skate supply</span>
+				<div class="brand-logo-wrap">
+					<img
+						class="brand-logo"
+						src="/images/branding/nav_image.png"
+						alt="Ember mountain logo"
+						loading="eager"
+					/>
+				</div>
 			</a>
 			<nav class="site-nav" aria-label="Primary">
 				<a href="/" data-active={currentPath === '/'}>Home</a>
