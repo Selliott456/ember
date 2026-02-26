@@ -1,113 +1,103 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { page } from '$app/stores';
-	import { formatPrice } from '$lib/formatPrice';
-
-	export let data: PageData;
-
-	$: products = data.products;
-	$: error = data.error;
-	$: canonical = $page.url.origin + $page.url.pathname;
+  import { page } from "$app/stores";
+  $: canonical = $page.url.origin + $page.url.pathname;
 </script>
 
 <svelte:head>
-	<title>Storefront | Featured products</title>
-	<meta name="description" content="Featured products from our store." />
-	<link rel="canonical" href={canonical} />
-	<meta property="og:type" content="website" />
-	<meta property="og:title" content="Storefront | Featured products" />
-	<meta property="og:description" content="Featured products from our store." />
-	<meta property="og:url" content={canonical} />
+  <title>Ember skate supply</title>
+  <meta
+    name="description"
+    content="Ember skate supply – premium apparel made for motion."
+  />
+  <link rel="canonical" href={canonical} />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Ember skate supply" />
+  <meta
+    property="og:description"
+    content="Ember skate supply – premium apparel made for motion."
+  />
+  <meta property="og:url" content={canonical} />
 </svelte:head>
 
 <main class="page">
-	<section class="hero">
-		<h1>Storefront</h1>
-		<p>Featured products</p>
-	</section>
-
-	{#if error}
-		<p class="error">{error}</p>
-	{/if}
-
-	{#if products.length === 0 && !error}
-		<p>No products found.</p>
-	{:else}
-		<ul class="product-grid">
-			{#each products as product}
-				<li class="product-card">
-					<a href={`/products/${product.handle}`}>
-						{#if product.featuredImage}
-							<img
-								src={product.featuredImage.url}
-								alt={product.featuredImage.altText ?? product.title}
-								loading="lazy"
-							/>
-						{/if}
-						<h2>{product.title}</h2>
-						<p class="price">
-							{formatPrice(product.priceRange.minVariantPrice.amount, product.priceRange.minVariantPrice.currencyCode)}
-						</p>
-					</a>
-				</li>
-			{/each}
-		</ul>
-	{/if}
+  <section class="hero">
+    <div class="hero-brand">
+      <img
+        class="hero-logo"
+        src="/images/branding/image.png"
+        alt="Ember logo"
+        loading="eager"
+      />
+      <p class="hero-tagline">PREMIUM APPAREL MADE FOR MOTION.</p>
+    </div>
+    <img
+      class="hero-image"
+      src="/images/hero-image.png"
+      alt="Skate crew wearing Ember apparel"
+      loading="eager"
+    />
+  </section>
 </main>
 
 <style>
-	.page {
-		max-width: 960px;
-		margin: 0 auto;
-		padding: 2rem 1rem 3rem;
-	}
+  .page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3.5rem;
+  }
 
-	.hero {
-		margin-bottom: 2rem;
-	}
+  .hero {
+    position: relative;
+    margin: 0 calc(50% - 50vw) 2.75rem;
+  height: 60vh;
+    border-radius: 0;
+    overflow: hidden;
+  }
 
-	.product-grid {
-		list-style: none;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-		gap: 1.5rem;
-		padding: 0;
-		margin: 0;
-	}
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  background-color: rgba(0, 48, 63, 0.7); /* darker brand ink vignette */
+    mix-blend-mode: multiply;
+  z-index: 0;
+  }
 
-	.product-card {
-		border: 1px solid #e2e2e2;
-		border-radius: 0.5rem;
-		overflow: hidden;
-		background: white;
-	}
+  .hero-image {
+    display: block;
+    width: 100%;
+  height: 100%;
+  object-fit: cover;
+  }
 
-	.product-card a {
-		display: block;
-		color: inherit;
-		text-decoration: none;
-		padding: 0.75rem;
-	}
+.hero-brand {
+  position: absolute;
+  left: 1.5rem;
+  bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+   z-index: 1;
+}
 
-	img {
-		width: 100%;
-		height: 200px;
-		object-fit: cover;
-		border-radius: 0.5rem;
-		margin-bottom: 0.5rem;
-	}
+.hero-logo {
+  display: block;
+  max-width: 360px;
+  width: 100%;
+  height: auto;
+}
 
-	h2 {
-		font-size: 1rem;
-		margin-bottom: 0.25rem;
-	}
+.hero-tagline {
+  margin-top: 0.5rem;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: var(--font-weight-semibold);
+}
 
-	.price {
-		font-weight: 600;
-	}
-
-	.error {
-		color: #b00020;
-	}
+  @media (max-width: 768px) {
+    .hero {
+      margin: 0 0 2rem;
+    }
+  }
 </style>
-

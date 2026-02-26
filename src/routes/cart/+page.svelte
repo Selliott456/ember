@@ -100,6 +100,7 @@
 						<td>
 							<button
 								type="button"
+								class="btn btn-ghost"
 								disabled={$state.actionInProgress === line.id}
 								onclick={() => handleRemove(line.id)}
 							>
@@ -124,13 +125,14 @@
 			<div class="actions">
 				<button
 					type="button"
+					class="btn btn-secondary"
 					disabled={$state.actionInProgress === 'clear'}
 					onclick={handleClear}
 				>
 					{$state.actionInProgress === 'clear' ? 'Clearing…' : 'Clear cart'}
 				</button>
 				{#if $state.cart.checkoutUrl}
-					<a class="checkout" href={$state.cart.checkoutUrl}>Checkout</a>
+					<a class="checkout btn btn-primary" href={$state.cart.checkoutUrl}>Checkout</a>
 				{:else}
 					<span class="checkout checkout--disabled" aria-disabled="true">Checkout</span>
 				{/if}
@@ -209,15 +211,6 @@
 	.actions {
 		display: flex;
 		gap: 0.5rem;
-	}
-
-	.checkout {
-		display: inline-block;
-		padding: 0.5rem 1rem;
-		border-radius: 0.25rem;
-		background: #111827;
-		color: white;
-		text-decoration: none;
 	}
 
 	.checkout--disabled {

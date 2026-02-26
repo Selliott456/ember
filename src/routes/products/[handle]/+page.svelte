@@ -171,7 +171,11 @@
 			</label>
 
 			<button
-				onclick={(e) => { e.preventDefault(); handleAddToCart(); }}
+				class="btn btn-primary"
+				onclick={(e) => {
+					e.preventDefault();
+					handleAddToCart();
+				}}
 				disabled={!canAddToCart}
 			>
 				{allSoldOut ? 'Sold out' : submitting ? 'Adding…' : 'Add to cart'}
