@@ -9,26 +9,41 @@
   const products = $derived(data.products);
   const canonical = $derived($page.url.origin + $page.url.pathname);
 
+  const BUCKET_TAGS = {
+    fieldnotes: ["fieldnotes"],
+    basecamp: ["basecamp", "everyday"],
+    conditions: ["conditions"],
+    naeba: ["naeba"]
+  } as const;
+
+  function hasAnyTag(product: { tags?: string[] }, tagsToMatch: string[]) {
+    const tags = (product.tags ?? []).map((t) => t.toLowerCase());
+    return tagsToMatch.some((tag) => tags.includes(tag));
+  }
+
   const fieldNotesProducts = $derived(
-    products.filter((p) => p.tags?.includes("fieldnotes")).slice(0, 3)
+    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.fieldnotes))
   );
   const baseCampProducts = $derived(
-    products
-      .filter((p) => p.tags?.includes("basecamp") || p.tags?.includes("everyday"))
-      .slice(0, 3)
+    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.basecamp))
   );
   const conditionsProducts = $derived(
-    products.filter((p) => p.tags?.includes("conditions")).slice(0, 3)
+    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.conditions))
   );
   const naebaProducts = $derived(
-    products.filter((p) => p.tags?.includes("naeba")).slice(0, 3)
+    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.naeba))
   );
+
+  const ALL_BUCKET_TAGS = [
+    ...BUCKET_TAGS.fieldnotes,
+    ...BUCKET_TAGS.basecamp,
+    ...BUCKET_TAGS.conditions,
+    ...BUCKET_TAGS.naeba
+  ];
 
   const unbucketedProducts = $derived(
     products.filter((p) => {
-      const tags = p.tags ?? [];
-      const buckets = ["fieldnotes", "basecamp", "everyday", "conditions", "naeba"];
-      return !tags.some((tag) => buckets.includes(tag));
+      return !hasAnyTag(p, ALL_BUCKET_TAGS);
     })
   );
 
@@ -77,6 +92,80 @@
     />
   </section>
 
+  <section class="collections-intro">
+    <h2>Collections</h2>
+  </section>
+
+  <section class="collections-grid">
+    <article class="collection-box">
+      <img
+        src="/images/fieldnotes_home.png"
+        alt="Field Notes collection"
+        loading="lazy"
+      />
+      <div class="collection-box-body">
+        <a class="btn btn-primary collection-cta" href="/collections/field-notes">
+          Shop Field Notes →
+        </a>
+        <p class="collection-blurb">
+          An ongoing study in form and detail. Field Notes blends utility and refinement, drawing
+          from observation, process, and the beauty of well-made essentials.
+        </p>
+      </div>
+    </article>
+
+    <article class="collection-box">
+      <img
+        src="/images/basecamp_home.png"
+        alt="Base Camp collection"
+        loading="lazy"
+      />
+      <div class="collection-box-body">
+        <a class="btn btn-primary collection-cta" href="/collections/base-camp">
+          Shop Base Camp →
+        </a>
+        <p class="collection-blurb">
+          The foundation. Elevated essentials cut clean, built right, and made to be worn daily
+          without thinking twice.
+        </p>
+      </div>
+    </article>
+
+    <article class="collection-box">
+      <img
+        src="/images/conditions_home.png"
+        alt="Conditions collection"
+        loading="lazy"
+      />
+      <div class="collection-box-body">
+        <a class="btn btn-primary collection-cta" href="/collections/conditions">
+          Shop Conditions →
+        </a>
+        <p class="collection-blurb">
+          Built for whatever the day throws at you. Conditions focuses on weight, texture, and
+          structure — premium pieces designed to move through shifting environments.
+        </p>
+      </div>
+    </article>
+
+    <article class="collection-box">
+      <img
+        src="/images/naeba_home.png"
+        alt="Naeba collection"
+        loading="lazy"
+      />
+      <div class="collection-box-body">
+        <a class="btn btn-primary collection-cta" href="/collections/naeba">
+          Shop Naeba →
+        </a>
+        <p class="collection-blurb">
+          Cold air, clean lines, and movement built into every stitch. Naeba is made for long days,
+          late lifts, and the quiet confidence of well-made gear.
+        </p>
+      </div>
+    </article>
+  </section>
+
   <section class="shop-all">
     <div class="shop-all-media">
       <img
@@ -93,137 +182,6 @@
     </div>
   </section>
 
-  <section class="collection-carousel">
-    <div class="collection-carousel-header">
-      <h2>Shop Field Notes collection</h2>
-      <a href="/collections/field-notes">View all</a>
-    </div>
-    {#if fieldNotesProducts.length}
-      <div class="collection-carousel-track">
-        {#each fieldNotesProducts as product}
-          <a href={`/products/${product.handle}`} class="collection-card">
-            {#if product.featuredImage}
-              <img
-                src={product.featuredImage.url}
-                alt={product.featuredImage.altText ?? product.title}
-                loading="lazy"
-              />
-            {/if}
-            <div class="collection-card-body">
-              <h3>{product.title}</h3>
-              <p class="collection-card-price">
-                {formatPrice(
-                  product.priceRange.minVariantPrice.amount,
-                  product.priceRange.minVariantPrice.currencyCode
-                )}
-              </p>
-            </div>
-          </a>
-        {/each}
-      </div>
-    {:else}
-      <p class="collection-empty">No Field Notes pieces live yet.</p>
-    {/if}
-  </section>
-
-  <section class="collection-carousel">
-    <div class="collection-carousel-header">
-      <h2>Shop Base Camp collection</h2>
-      <a href="/collections/base-camp">View all</a>
-    </div>
-    {#if baseCampProducts.length}
-      <div class="collection-carousel-track">
-        {#each baseCampProducts as product}
-          <a href={`/products/${product.handle}`} class="collection-card">
-            {#if product.featuredImage}
-              <img
-                src={product.featuredImage.url}
-                alt={product.featuredImage.altText ?? product.title}
-                loading="lazy"
-              />
-            {/if}
-            <div class="collection-card-body">
-              <h3>{product.title}</h3>
-              <p class="collection-card-price">
-                {formatPrice(
-                  product.priceRange.minVariantPrice.amount,
-                  product.priceRange.minVariantPrice.currencyCode
-                )}
-              </p>
-            </div>
-          </a>
-        {/each}
-      </div>
-    {:else}
-      <p class="collection-empty">No Base Camp staples live yet.</p>
-    {/if}
-  </section>
-
-  <section class="collection-carousel">
-    <div class="collection-carousel-header">
-      <h2>Conditions collection</h2>
-      <a href="/collections/conditions">View all</a>
-    </div>
-    {#if conditionsProducts.length}
-      <div class="collection-carousel-track">
-        {#each conditionsProducts as product}
-          <a href={`/products/${product.handle}`} class="collection-card">
-            {#if product.featuredImage}
-              <img
-                src={product.featuredImage.url}
-                alt={product.featuredImage.altText ?? product.title}
-                loading="lazy"
-              />
-            {/if}
-            <div class="collection-card-body">
-              <h3>{product.title}</h3>
-              <p class="collection-card-price">
-                {formatPrice(
-                  product.priceRange.minVariantPrice.amount,
-                  product.priceRange.minVariantPrice.currencyCode
-                )}
-              </p>
-            </div>
-          </a>
-        {/each}
-      </div>
-    {:else}
-      <p class="collection-empty">No Conditions pieces live yet.</p>
-    {/if}
-  </section>
-
-  <section class="collection-carousel">
-    <div class="collection-carousel-header">
-      <h2>Naeba collection</h2>
-      <a href="/collections/naeba">View all</a>
-    </div>
-    {#if naebaProducts.length}
-      <div class="collection-carousel-track">
-        {#each naebaProducts as product}
-          <a href={`/products/${product.handle}`} class="collection-card">
-            {#if product.featuredImage}
-              <img
-                src={product.featuredImage.url}
-                alt={product.featuredImage.altText ?? product.title}
-                loading="lazy"
-              />
-            {/if}
-            <div class="collection-card-body">
-              <h3>{product.title}</h3>
-              <p class="collection-card-price">
-                {formatPrice(
-                  product.priceRange.minVariantPrice.amount,
-                  product.priceRange.minVariantPrice.currencyCode
-                )}
-              </p>
-            </div>
-          </a>
-        {/each}
-      </div>
-    {:else}
-      <p class="collection-empty">No Naeba pieces live yet.</p>
-    {/if}
-  </section>
 
   {#if dev}
     <section class="debug-untagged">
@@ -310,6 +268,109 @@
     display: block;
   }
 
+  .collections-intro {
+    margin-bottom: var(--space-4);
+  }
+
+  .collections-intro h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    letter-spacing: var(--letter-spacing-tight);
+  }
+
+  .collections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
+  }
+
+  .collection-box {
+    border-radius: var(--radius-md);
+    border: none;
+    background-color: transparent;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .collection-box img {
+    display: block;
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+  }
+
+  .collection-box-body {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.78),
+      rgba(0, 0, 0, 0.35),
+      transparent
+    );
+    color: #ffffff;
+    justify-content: flex-end;
+  }
+
+  .collection-box-body p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .collection-box-body .btn {
+    align-self: flex-start;
+    margin-top: var(--space-2);
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    padding-left: 0;
+    padding-right: 0;
+    text-decoration: underline;
+    color: #ffffff;
+    font-weight: var(--font-weight-bold);
+    font-size: 1rem;
+  }
+
+  .collection-cta {
+    transition:
+      transform 160ms ease-out,
+      text-decoration-color 160ms ease-out;
+  }
+
+  .collection-blurb {
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 160ms ease-out,
+      transform 160ms ease-out;
+    font-size: 0.9rem;
+  }
+
+  .collection-box:hover .collection-box-body {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.9),
+      rgba(0, 0, 0, 0.55),
+      transparent
+    );
+  }
+
+  .collection-box:hover .collection-cta {
+    transform: translateY(-1.5rem);
+  }
+
+  .collection-box:hover .collection-blurb {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   .shop-all-media img {
     display: block;
     width: 100%;
@@ -362,98 +423,6 @@
     color: #ffffff;
   }
 
-  .collection-carousel {
-    margin-top: var(--space-8);
-  }
-
-  .collection-carousel-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-3);
-    margin-bottom: var(--space-3);
-  }
-
-  .collection-carousel-header h2 {
-    margin: 0;
-    font-size: 1.3rem;
-    letter-spacing: var(--letter-spacing-tight);
-  }
-
-  .collection-carousel-header a {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    text-decoration: none;
-    color: var(--color-text-soft);
-  }
-
-  .collection-carousel-header a:hover {
-    color: var(--color-text);
-  }
-
-  .collection-carousel-track {
-    display: flex;
-    gap: var(--space-4);
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-  }
-
-  .collection-card {
-    flex: 0 0 220px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border-subtle);
-    background-color: var(--color-surface);
-    padding: var(--space-3);
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow-none);
-    transition:
-      transform 90ms ease-out,
-      box-shadow 90ms ease-out,
-      border-color 90ms ease-out;
-  }
-
-  .collection-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-sm);
-    border-color: var(--color-border);
-  }
-
-  .collection-card-label {
-    font-size: 0.9rem;
-    font-weight: var(--font-weight-medium);
-    letter-spacing: var(--letter-spacing-tight);
-  }
-
-  .collection-card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: var(--radius-md);
-    margin-bottom: 0.5rem;
-  }
-
-  .collection-card-body h3 {
-    margin: 0 0 0.25rem;
-    font-size: 0.95rem;
-    letter-spacing: var(--letter-spacing-tight);
-  }
-
-  .collection-card-price {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .collection-empty {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-  }
-
   .debug-untagged {
     margin-top: var(--space-8);
     padding: var(--space-4);
@@ -478,16 +447,6 @@
   }
 
   @media (max-width: 768px) {
-    .collection-carousel {
-      margin-top: var(--space-6);
-    }
-
-    .collection-card {
-      flex-basis: 70%;
-    }
-  }
-
-  @media (max-width: 768px) {
     .hero {
       margin: 0 calc(50% - 50vw) 2rem;
       width: 100vw;
@@ -506,6 +465,11 @@
     .shop-all-cta-group {
       grid-template-columns: minmax(0, 1fr);
       grid-template-rows: none; /* let rows size naturally when stacked */
+    }
+
+    .collections-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-4);
     }
   }
 </style>
