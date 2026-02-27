@@ -108,6 +108,7 @@ type ProductNode = {
   handle: string;
   title: string;
   description: string;
+  tags?: string[];
   featuredImage: {
     url: string;
     altText: string | null;
@@ -201,6 +202,7 @@ function mapProduct(node: ProductNode): Product {
     handle: node.handle,
     title: node.title,
     description: node.description,
+    tags: node.tags,
     featuredImage: node.featuredImage
       ? {
           url: node.featuredImage.url,

@@ -27,6 +27,8 @@ export type Product = {
   handle: string;
   title: string;
   description: string;
+  /** Shopify product tags, e.g. "fieldnotes", "basecamp", "conditions". */
+  tags?: string[];
   featuredImage?: {
     url: string;
     altText: string | null;

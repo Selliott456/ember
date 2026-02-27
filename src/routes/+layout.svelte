@@ -6,6 +6,7 @@
 	let { children } = $props();
 
 	const currentPath = $derived($page.url.pathname);
+	let isNavOpen = $state(false);
 </script>
 
 <svelte:head>
@@ -25,7 +26,18 @@
 					/>
 				</div>
 			</a>
-			<nav class="site-nav" aria-label="Primary">
+			<button
+				type="button"
+				class="site-nav-toggle"
+				aria-label="Toggle navigation"
+				aria-expanded={isNavOpen}
+				on:click={() => (isNavOpen = !isNavOpen)}
+			>
+				<span></span>
+				<span></span>
+				<span></span>
+			</button>
+			<nav class="site-nav" class:site-nav-open={isNavOpen} aria-label="Primary">
 				<a href="/" data-active={currentPath === '/'}>Home</a>
 				<a href="/products" data-active={currentPath.startsWith('/products') && currentPath !== '/'}>Products</a>
 				<a href="/collections" data-active={currentPath.startsWith('/collections')}>Collections</a>

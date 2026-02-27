@@ -5,11 +5,11 @@
   --color-bg: #ffffff; /* page background */
   --color-surface: #f5faf8;
   --color-surface-elevated: #edf5f1;
-  --color-border-subtle: #073545;
-  --color-border: #0c4a5e;
-  --color-text: #f9fafb;
-  --color-text-muted: #cae4db; /* brand mist */
-  --color-text-soft: #7a9d96;  /* brand sage */
+  --color-border-subtle: #d1e4dc;
+  --color-border: #7a9d96;
+  --color-text: #111827;        /* charcoal base text */
+  --color-text-muted: #4b5563;  /* muted charcoal */
+  --color-text-soft: #6b7280;   /* softer charcoal */
 
   /* Brand palette (raw) */
   --color-brand-ink: #00303f;      /* deep teal / ink */
@@ -81,11 +81,11 @@
   --color-bg: #ffffff;
   --color-surface: #ffffff;
   --color-surface-elevated: #f7fafc;
-  --color-border-subtle: #d1e4dc;
-  --color-border: #7a9d96;      /* brand sage */
-  --color-text: #021f29;
+  --color-border-subtle: #e5e7eb;
+  --color-border: #d1d5db;
+  --color-text: #111827;        /* charcoal base text */
   --color-text-muted: #4b5563;
-  --color-text-soft: #7a9d96;
+  --color-text-soft: #6b7280;
 
   --color-accent-soft: rgba(220, 174, 29, 0.16);
 }
@@ -340,6 +340,7 @@ textarea:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+  position: relative;
 }
 
 .brand-mark {
@@ -387,6 +388,59 @@ textarea:focus-visible {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+}
+
+.site-nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0.2rem 0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-brand-mist);
+  cursor: pointer;
+}
+
+.site-nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 2.5px;
+  border-radius: 999px;
+  background-color: currentColor;
+}
+
+.site-nav-toggle:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .site-header-inner {
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .site-nav-toggle {
+    display: inline-flex;
+  }
+
+  .site-nav {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    padding: 0.75rem var(--space-4) 1rem;
+    background-color: var(--color-brand-ink);
+    border-bottom: 1px solid var(--color-brand-ink);
+    flex-direction: column;
+    gap: var(--space-2);
+    display: none;
+  }
+
+  .site-nav.site-nav-open {
+    display: flex;
+  }
 }
 
 .site-nav a {

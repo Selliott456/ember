@@ -7,6 +7,7 @@ export const PRODUCT_LIST_QUERY = `
           handle
           title
           description
+          tags
           featuredImage {
             url
             altText
@@ -51,6 +52,7 @@ export const PRODUCT_BY_HANDLE_QUERY = `
       handle
       title
       description
+      tags
       featuredImage {
         url
         altText
