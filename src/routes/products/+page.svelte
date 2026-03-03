@@ -9,6 +9,33 @@
 	const error = $derived(data.error);
 	const canonical = $derived($page.url.origin + $page.url.pathname);
 
+	const genderFilter = $derived($page.url.searchParams.get('gender')?.toLowerCase() ?? null);
+	const collectionFilter = $derived(
+		$page.url.searchParams.get('collection')?.toLowerCase() ?? null
+	);
+	const typeFilter = $derived($page.url.searchParams.get('type')?.toLowerCase() ?? null);
+
+	const TYPE_TAG_MAP: Record<string, string[]> = {
+		tee: ['tee', 'tees', 't-shirt', 't-shirts'],
+		hoodie: ['hoodie', 'hoodies', 'hooded'],
+		sweater: ['sweater', 'sweaters', 'knit'],
+		pants: ['pants', 'trousers', 'joggers', 'jogger', 'shorts'],
+		jeans: ['jeans', 'denim']
+	};
+
+	function matchesFilter(product: any) {
+		const tags = (product.tags ?? []).map((t: string) => t.toLowerCase());
+		if (genderFilter && !tags.includes(genderFilter)) return false;
+		if (collectionFilter && !tags.includes(collectionFilter)) return false;
+		if (typeFilter) {
+			const allowed = TYPE_TAG_MAP[typeFilter] ?? [typeFilter];
+			if (!tags.some((tag) => allowed.includes(tag))) return false;
+		}
+		return true;
+	}
+
+	const filteredProducts = $derived(products.filter((p) => matchesFilter(p)));
+
 	// Track which gallery image is active per product ID
 	const imageIndexById = $state<Record<string, number>>({});
 
@@ -53,11 +80,11 @@
 		<p class="error">{error}</p>
 	{/if}
 
-	{#if products.length === 0 && !error}
+	{#if filteredProducts.length === 0 && !error}
 		<p>No products found.</p>
 	{:else}
 		<ul class="product-grid">
-			{#each products as product}
+			{#each filteredProducts as product}
 				<li class="product-card">
 					<a href="/products/{product.handle}">
 						<div

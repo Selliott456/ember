@@ -390,6 +390,10 @@ textarea:focus-visible {
   letter-spacing: 0.12em;
 }
 
+.site-nav-item {
+  position: relative;
+}
+
 .site-nav-toggle {
   display: none;
   align-items: center;
@@ -441,6 +445,11 @@ textarea:focus-visible {
   .site-nav.site-nav-open {
     display: flex;
   }
+
+  /* Hide desktop hover dropdown on mobile */
+  .nav-dropdown {
+    display: none !important;
+  }
 }
 
 .site-nav a {
@@ -458,6 +467,55 @@ textarea:focus-visible {
 .site-nav a[data-active='true'] {
   color: var(--color-brand-gold);
   border-bottom-color: var(--color-brand-gold);
+}
+
+.nav-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.4rem;
+  padding: var(--space-4);
+  background-color: #021f29;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+  display: none;
+  gap: var(--space-6);
+  min-width: 520px;
+  z-index: var(--z-nav);
+}
+
+.nav-dropdown-column {
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.nav-dropdown-column h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-brand-mist);
+}
+
+.nav-dropdown-column a {
+  font-size: 0.75rem;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: #e5e7eb;
+  padding: 0.1rem 0;
+  border-bottom: none;
+}
+
+.nav-dropdown-column a:hover {
+  color: var(--color-brand-gold);
+}
+
+.has-dropdown:hover .nav-dropdown {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 /* Modal / drawer primitives (not yet wired) */

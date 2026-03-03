@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import favicon from '$lib/assets/favicon.svg';
 	import '$lib/theme.css';
+	import NavGenderDropdown from '$lib/NavGenderDropdown.svelte';
 
 	let { children } = $props();
 
@@ -38,9 +39,10 @@
 				<span></span>
 			</button>
 			<nav class="site-nav" class:site-nav-open={isNavOpen} aria-label="Primary">
-				<a href="/" data-active={currentPath === '/'}>Home</a>
-				<a href="/products" data-active={currentPath.startsWith('/products') && currentPath !== '/'}>Products</a>
-				<a href="/collections" data-active={currentPath.startsWith('/collections')}>Collections</a>
+				<NavGenderDropdown label="Women" gender="women" />
+				<NavGenderDropdown label="Men" gender="men" />
+				<NavGenderDropdown label="Unisex" gender="unisex" />
+
 				<a href="/cart" data-active={currentPath.startsWith('/cart')}>Cart</a>
 			</nav>
 		</div>

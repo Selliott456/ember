@@ -297,6 +297,63 @@
     display: block;
   }
 
+  .gender-nav {
+    margin: var(--space-6) calc(50% - 50vw) var(--space-4);
+    padding: 0.6rem 0;
+    background-color: var(--color-brand-gold);
+  }
+
+  .gender-nav-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: var(--space-4);
+  }
+
+  .gender-nav-item {
+    position: relative;
+  }
+
+  .gender-nav-item > a {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    color: #111827;
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.16);
+  }
+
+  .gender-nav-item > a:hover {
+    background-color: rgba(255, 255, 255, 0.28);
+  }
+
+  .gender-nav-dropdown {
+    position: absolute;
+    top: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 0.25rem;
+    padding: var(--space-4);
+    background-color: #021f29;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    display: none;
+    gap: var(--space-6);
+    min-width: 460px;
+    z-index: var(--z-nav);
+  }
+
+  .gender-nav-column {
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
   .elevated-basics {
     margin: var(--space-12) auto var(--space-10);
     padding: var(--space-6) 0;
