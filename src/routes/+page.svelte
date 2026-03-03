@@ -98,71 +98,71 @@
 
   <section class="collections-grid">
     <article class="collection-box">
-      <img
-        src="/images/fieldnotes_home.png"
-        alt="Field Notes collection"
-        loading="lazy"
-      />
-      <div class="collection-box-body">
-        <a class="btn btn-primary collection-cta" href="/collections/field-notes">
-          Shop Field Notes →
-        </a>
-        <p class="collection-blurb">
-          An ongoing study in form and detail. Field Notes blends utility and refinement, drawing
-          from observation, process, and the beauty of well-made essentials.
-        </p>
-      </div>
+      <a class="collection-box-link" href="/collections/field-notes">
+        <img
+          src="/images/fieldnotes_home.png"
+          alt="Field Notes collection"
+          loading="lazy"
+        />
+        <div class="collection-box-body">
+          <span class="btn btn-primary collection-cta">Shop Field Notes →</span>
+          <p class="collection-blurb">
+            An ongoing study in form and detail. Field Notes blends utility and refinement, drawing
+            from observation, process, and the beauty of well-made essentials.
+          </p>
+        </div>
+      </a>
     </article>
 
     <article class="collection-box">
-      <img
-        src="/images/basecamp_home.png"
-        alt="Base Camp collection"
-        loading="lazy"
-      />
-      <div class="collection-box-body">
-        <a class="btn btn-primary collection-cta" href="/collections/base-camp">
-          Shop Base Camp →
-        </a>
-        <p class="collection-blurb">
-          The foundation. Elevated essentials cut clean, built right, and made to be worn daily
-          without thinking twice.
-        </p>
-      </div>
+      <a class="collection-box-link" href="/collections/base-camp">
+        <img
+          src="/images/basecamp_home.png"
+          alt="Base Camp collection"
+          loading="lazy"
+        />
+        <div class="collection-box-body">
+          <span class="btn btn-primary collection-cta">Shop Base Camp →</span>
+          <p class="collection-blurb">
+            The foundation. Elevated essentials cut clean, built right, and made to be worn daily
+            without thinking twice.
+          </p>
+        </div>
+      </a>
     </article>
 
     <article class="collection-box">
-      <img
-        src="/images/conditions_home.png"
-        alt="Conditions collection"
-        loading="lazy"
-      />
-      <div class="collection-box-body">
-        <a class="btn btn-primary collection-cta" href="/collections/conditions">
-          Shop Conditions →
-        </a>
-        <p class="collection-blurb">
-          Built for whatever the day throws at you. Conditions focuses on weight, texture, and
-          structure — premium pieces designed to move through shifting environments.
-        </p>
-      </div>
+      <a class="collection-box-link" href="/collections/conditions">
+        <img
+          src="/images/conditions_home.png"
+          alt="Conditions collection"
+          loading="lazy"
+        />
+        <div class="collection-box-body">
+          <span class="btn btn-primary collection-cta">Shop Conditions →</span>
+          <p class="collection-blurb">
+            Built for whatever the day throws at you. Conditions focuses on weight, texture, and
+            structure — premium pieces designed to move through shifting environments.
+          </p>
+        </div>
+      </a>
     </article>
 
     <article class="collection-box">
-      <img
-        src="/images/naeba_home.png"
-        alt="Naeba collection"
-        loading="lazy"
-      />
-      <div class="collection-box-body">
-        <a class="btn btn-primary collection-cta" href="/collections/naeba">
-          Shop Naeba →
-        </a>
-        <p class="collection-blurb">
-          Cold air, clean lines, and movement built into every stitch. Naeba is made for long days,
-          late lifts, and the quiet confidence of well-made gear.
-        </p>
-      </div>
+      <a class="collection-box-link" href="/collections/naeba">
+        <img
+          src="/images/naeba_home.png"
+          alt="Naeba collection"
+          loading="lazy"
+        />
+        <div class="collection-box-body">
+          <span class="btn btn-primary collection-cta">Shop Naeba →</span>
+          <p class="collection-blurb">
+            Cold air, clean lines, and movement built into every stitch. Naeba is made for long
+            days, late lifts, and the quiet confidence of well-made gear.
+          </p>
+        </div>
+      </a>
     </article>
   </section>
 
@@ -290,10 +290,14 @@
     border: none;
     background-color: transparent;
     overflow: hidden;
+  }
+
+  .collection-box-link {
+    display: block;
     position: relative;
   }
 
-  .collection-box img {
+  .collection-box-link img {
     display: block;
     width: 100%;
     height: 260px;
@@ -354,6 +358,7 @@
   }
 
   .collection-box:hover .collection-box-body {
+    /* hover when either the article or the link is hovered */
     background: linear-gradient(
       to top,
       rgba(0, 0, 0, 0.9),
