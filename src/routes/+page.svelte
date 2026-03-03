@@ -13,7 +13,7 @@
     fieldnotes: ["fieldnotes"],
     basecamp: ["basecamp", "everyday"],
     conditions: ["conditions"],
-    naeba: ["naeba"]
+    naeba: ["naeba"],
   } as const;
 
   function hasAnyTag(product: { tags?: string[] }, tagsToMatch: string[]) {
@@ -22,36 +22,40 @@
   }
 
   const fieldNotesProducts = $derived(
-    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.fieldnotes))
+    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.fieldnotes)),
   );
   const baseCampProducts = $derived(
-    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.basecamp))
+    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.basecamp)),
   );
   const conditionsProducts = $derived(
-    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.conditions))
+    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.conditions)),
   );
   const naebaProducts = $derived(
-    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.naeba))
+    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.naeba)),
   );
 
   const ALL_BUCKET_TAGS = [
     ...BUCKET_TAGS.fieldnotes,
     ...BUCKET_TAGS.basecamp,
     ...BUCKET_TAGS.conditions,
-    ...BUCKET_TAGS.naeba
+    ...BUCKET_TAGS.naeba,
   ];
 
   const unbucketedProducts = $derived(
     products.filter((p) => {
       return !hasAnyTag(p, ALL_BUCKET_TAGS);
-    })
+    }),
   );
 
   $effect(() => {
     if (dev && unbucketedProducts.length) {
       console.warn(
         "[debug] Products missing collection tags:",
-        unbucketedProducts.map((p) => ({ title: p.title, handle: p.handle, tags: p.tags }))
+        unbucketedProducts.map((p) => ({
+          title: p.title,
+          handle: p.handle,
+          tags: p.tags,
+        })),
       );
     }
   });
@@ -107,8 +111,9 @@
         <div class="collection-box-body">
           <span class="btn btn-primary collection-cta">Shop Field Notes →</span>
           <p class="collection-blurb">
-            An ongoing study in form and detail. Field Notes blends utility and refinement, drawing
-            from observation, process, and the beauty of well-made essentials.
+            An ongoing study in form and detail. Field Notes blends utility and
+            refinement, drawing from observation, process, and the beauty of
+            well-made essentials.
           </p>
         </div>
       </a>
@@ -124,8 +129,8 @@
         <div class="collection-box-body">
           <span class="btn btn-primary collection-cta">Shop Base Camp →</span>
           <p class="collection-blurb">
-            The foundation. Elevated essentials cut clean, built right, and made to be worn daily
-            without thinking twice.
+            The foundation. Elevated essentials cut clean, built right, and made
+            to be worn daily without thinking twice.
           </p>
         </div>
       </a>
@@ -141,8 +146,9 @@
         <div class="collection-box-body">
           <span class="btn btn-primary collection-cta">Shop Conditions →</span>
           <p class="collection-blurb">
-            Built for whatever the day throws at you. Conditions focuses on weight, texture, and
-            structure — premium pieces designed to move through shifting environments.
+            Built for whatever the day throws at you. Conditions focuses on
+            weight, texture, and structure — premium pieces designed to move
+            through shifting environments.
           </p>
         </div>
       </a>
@@ -158,12 +164,22 @@
         <div class="collection-box-body">
           <span class="btn btn-primary collection-cta">Shop Naeba →</span>
           <p class="collection-blurb">
-            Cold air, clean lines, and movement built into every stitch. Naeba is made for long
-            days, late lifts, and the quiet confidence of well-made gear.
+            Cold air, clean lines, and movement built into every stitch. Naeba
+            is made for long days, late lifts, and the quiet confidence of
+            well-made gear.
           </p>
         </div>
       </a>
     </article>
+  </section>
+
+  <section class="elevated-basics">
+    <h2>Everyday Wear / Elevated Basics</h2>
+    <p>
+      We believe the best clothing earns its place quietly. Elevated essentials,
+      refined through material and fit, meant to be worn daily without second
+      thought. Strong enough to stand alone. Simple enough to layer.
+    </p>
   </section>
 
   <section class="shop-all">
@@ -174,20 +190,30 @@
         loading="lazy"
       />
       <div class="shop-all-cta-group">
-        <a class="shop-all-tile shop-all-tile--men" href="/collections/men">Shop men</a>
-        <a class="shop-all-tile shop-all-tile--unisex" href="/collections/unisex">Shop unisex</a>
-        <a class="shop-all-tile shop-all-tile--women" href="/collections/women">Shop women</a>
-        <a class="shop-all-tile shop-all-tile--all" href="/products">Shop all</a>
+        <a class="shop-all-tile shop-all-tile--men" href="/collections/men"
+          >Shop men</a
+        >
+        <a
+          class="shop-all-tile shop-all-tile--unisex"
+          href="/collections/unisex">Shop unisex</a
+        >
+        <a class="shop-all-tile shop-all-tile--women" href="/collections/women"
+          >Shop women</a
+        >
+        <a class="shop-all-tile shop-all-tile--all" href="/products">Shop all</a
+        >
       </div>
     </div>
   </section>
-
 
   {#if dev}
     <section class="debug-untagged">
       <h2>Debug: Untagged products</h2>
       {#if unbucketedProducts.length}
-        <p>These products are not in any of: fieldnotes, basecamp/everyday, conditions, naeba.</p>
+        <p>
+          These products are not in any of: fieldnotes, basecamp/everyday,
+          conditions, naeba.
+        </p>
         <ul>
           {#each unbucketedProducts as product}
             <li>
@@ -202,7 +228,10 @@
           {/each}
         </ul>
       {:else}
-        <p>All loaded products are tagged into one of: fieldnotes, basecamp/everyday, conditions, naeba.</p>
+        <p>
+          All loaded products are tagged into one of: fieldnotes,
+          basecamp/everyday, conditions, naeba.
+        </p>
       {/if}
     </section>
   {/if}
@@ -218,7 +247,7 @@
   .hero {
     position: relative;
     margin: 0 calc(50% - 50vw) 2.75rem;
-  height: 60vh;
+    height: 60vh;
     border-radius: 0;
     overflow: hidden;
   }
@@ -228,44 +257,62 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-  background-color: rgba(0, 48, 63, 0.7); /* darker brand ink vignette */
+    background-color: rgba(0, 48, 63, 0.7); /* darker brand ink vignette */
     mix-blend-mode: multiply;
-  z-index: 0;
+    z-index: 0;
   }
 
   .hero-image {
     display: block;
     width: 100%;
-  height: 100%;
-  object-fit: cover;
+    height: 100%;
+    object-fit: cover;
   }
 
   .hero-brand {
-  position: absolute;
-  left: 1.5rem;
-  bottom: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-   z-index: 1;
-}
+    position: absolute;
+    left: 1.5rem;
+    bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+  }
 
   .hero-logo {
-  display: block;
-  max-width: 360px;
-  width: 100%;
-  height: auto;
-}
+    display: block;
+    max-width: 360px;
+    width: 100%;
+    height: auto;
+  }
 
   .hero-tagline {
-  margin-top: 0.5rem;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: var(--font-weight-semibold);
-}
+    margin-top: 0.5rem;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+  }
 
   .shop-all {
     display: block;
+  }
+
+  .elevated-basics {
+    margin: var(--space-12) auto var(--space-10);
+    padding: var(--space-6) 0;
+    text-align: left;
+  }
+
+  .elevated-basics h2 {
+    margin: 0 0 var(--space-2);
+    font-size: 1.7rem;
+    letter-spacing: var(--letter-spacing-tight);
+  }
+
+  .elevated-basics p {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
   }
 
   .collections-intro {

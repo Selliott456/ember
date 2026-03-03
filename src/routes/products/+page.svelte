@@ -8,6 +8,31 @@
 	const products = $derived(data.products);
 	const error = $derived(data.error);
 	const canonical = $derived($page.url.origin + $page.url.pathname);
+
+	// Track which gallery image is active per product ID
+	const imageIndexById = $state<Record<string, number>>({});
+
+	function getImages(product: any) {
+		if (product.images && product.images.length) return product.images;
+		if (product.featuredImage) return [product.featuredImage];
+		return [];
+	}
+
+	function currentImage(product: any) {
+		const images = getImages(product);
+		if (!images.length) return null;
+		const idx = imageIndexById[product.id] ?? 0;
+		return images[idx] ?? images[0];
+	}
+
+	function cycleImage(event: MouseEvent, product: any) {
+		event.preventDefault();
+		event.stopPropagation();
+		const images = getImages(product);
+		if (!images.length) return;
+		const current = imageIndexById[product.id] ?? 0;
+		imageIndexById[product.id] = (current + 1) % images.length;
+	}
 </script>
 
 <svelte:head>
@@ -35,13 +60,20 @@
 			{#each products as product}
 				<li class="product-card">
 					<a href="/products/{product.handle}">
-						{#if product.featuredImage}
-							<img
-								src={product.featuredImage.url}
-								alt={product.featuredImage.altText ?? product.title}
-								loading="lazy"
-							/>
-						{/if}
+						<div
+							class="product-image-shell"
+							on:click={(event) => cycleImage(event, product)}
+						>
+							{#if currentImage(product)}
+								<img
+									src={currentImage(product).url}
+									alt={currentImage(product).altText ?? product.title}
+									loading="lazy"
+								/>
+							{/if}
+							<div class="image-hint image-hint-left">←</div>
+							<div class="image-hint image-hint-right">→</div>
+						</div>
 						<h2>{product.title}</h2>
 						<p class="price">
 							{formatPrice(product.priceRange.minVariantPrice.amount, product.priceRange.minVariantPrice.currencyCode)}
@@ -90,12 +122,50 @@
 		padding: 0.75rem;
 	}
 
-	.product-card img {
+	.product-image-shell {
+		position: relative;
 		width: 100%;
 		height: 200px;
-		object-fit: cover;
-		border-radius: 0.5rem;
 		margin-bottom: 0.5rem;
+		border-radius: 0.5rem;
+		overflow: hidden;
+		cursor: pointer;
+	}
+
+	.product-image-shell img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.image-hint {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 1.6rem;
+		height: 1.6rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.6);
+		color: #f9fafb;
+		font-size: 0.7rem;
+		opacity: 0;
+		transition: opacity 120ms ease-out;
+	}
+
+	.image-hint-left {
+		left: 0.4rem;
+	}
+
+	.image-hint-right {
+		right: 0.4rem;
+	}
+
+	.product-image-shell:hover .image-hint {
+		opacity: 1;
 	}
 
 	.product-card h2 {
