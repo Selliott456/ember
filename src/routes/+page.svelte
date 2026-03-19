@@ -1,584 +1,424 @@
 <script lang="ts">
-  import type { PageData } from "./$types";
-  import { page } from "$app/stores";
-  import { dev } from "$app/environment";
-  import { formatPrice } from "$lib/formatPrice";
+	import type { PageData } from './$types';
+	import { page } from '$app/stores';
+	import HeroSection from '$lib/components/home/HeroSection.svelte';
+	import CollectionCard from '$lib/components/home/CollectionCard.svelte';
+	import ProductCard from '$lib/components/home/ProductCard.svelte';
+	import CategoryTile from '$lib/components/home/CategoryTile.svelte';
+	import SiteFooter from '$lib/components/home/SiteFooter.svelte';
 
-  let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-  const products = $derived(data.products);
-  const canonical = $derived($page.url.origin + $page.url.pathname);
+	const products = $derived(data.products);
+	const canonical = $derived($page.url.origin + $page.url.pathname);
 
-  const BUCKET_TAGS = {
-    fieldnotes: ["fieldnotes"],
-    basecamp: ["basecamp", "everyday"],
-    conditions: ["conditions"],
-    naeba: ["naeba"],
-  } as const;
+	const featuredCollections = [
+		{
+			title: 'Hanko',
+			description: 'Precision graphics and clean silhouettes.',
+			href: '/collections/hanko',
+			imageSrc: '/images/hanko_sweater.png',
+			imageAlt: 'Hanko collection'
+		},
+		{
+			title: 'Field Notes',
+			description: 'Utility essentials refined by detail.',
+			href: '/collections/field-notes',
+			imageSrc: '/images/fieldnotes_home.png',
+			imageAlt: 'Field Notes collection'
+		},
+		{
+			title: 'Conditions',
+			description: 'Built for shifting city weather.',
+			href: '/collections/conditions',
+			imageSrc: '/images/conditions_home.png',
+			imageAlt: 'Conditions collection'
+		},
+		{
+			title: 'Basecamp',
+			description: 'Foundational layers for every day.',
+			href: '/collections/base-camp',
+			imageSrc: '/images/basecamp_home.png',
+			imageAlt: 'Basecamp collection'
+		}
+	] as const;
 
-  function hasAnyTag(product: { tags?: string[] }, tagsToMatch: string[]) {
-    const tags = (product.tags ?? []).map((t) => t.toLowerCase());
-    return tagsToMatch.some((tag) => tags.includes(tag));
-  }
+	const curatedProducts = $derived(products.slice(0, 4));
 
-  const fieldNotesProducts = $derived(
-    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.fieldnotes)),
-  );
-  const baseCampProducts = $derived(
-    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.basecamp)),
-  );
-  const conditionsProducts = $derived(
-    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.conditions)),
-  );
-  const naebaProducts = $derived(
-    products.filter((p) => hasAnyTag(p, BUCKET_TAGS.naeba)),
-  );
-
-  const ALL_BUCKET_TAGS = [
-    ...BUCKET_TAGS.fieldnotes,
-    ...BUCKET_TAGS.basecamp,
-    ...BUCKET_TAGS.conditions,
-    ...BUCKET_TAGS.naeba,
-  ];
-
-  const unbucketedProducts = $derived(
-    products.filter((p) => {
-      return !hasAnyTag(p, ALL_BUCKET_TAGS);
-    }),
-  );
-
-  $effect(() => {
-    if (dev && unbucketedProducts.length) {
-      console.warn(
-        "[debug] Products missing collection tags:",
-        unbucketedProducts.map((p) => ({
-          title: p.title,
-          handle: p.handle,
-          tags: p.tags,
-        })),
-      );
-    }
-  });
+	const lookbookImages = [
+		'/images/shoreditch.png',
+		'/images/skater_laugh.png',
+		'/images/hanko_sweater.png',
+		'/images/badbish.png',
+		'/images/group_skate_sundown.png',
+		'/images/hero-image.png'
+	];
 </script>
 
 <svelte:head>
-  <title>Ember skate supply</title>
-  <meta
-    name="description"
-    content="Ember skate supply – premium apparel made for motion."
-  />
-  <link rel="canonical" href={canonical} />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Ember skate supply" />
-  <meta
-    property="og:description"
-    content="Ember skate supply – premium apparel made for motion."
-  />
-  <meta property="og:url" content={canonical} />
+	<title>Ember | Premium Streetwear</title>
+	<meta
+		name="description"
+		content="Premium streetwear with clean design and a worn-in edge."
+	/>
+	<link rel="canonical" href={canonical} />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Ember | Premium Streetwear" />
+	<meta
+		property="og:description"
+		content="Premium streetwear with clean design and a worn-in edge."
+	/>
+	<meta property="og:url" content={canonical} />
 </svelte:head>
 
-<main class="page">
-  <section class="hero">
-    <div class="hero-brand">
-      <img
-        class="hero-logo"
-        src="/images/branding/image.png"
-        alt="Ember logo"
-        loading="eager"
-      />
-      <p class="hero-tagline">PREMIUM APPAREL MADE FOR MOTION.</p>
-    </div>
-    <img
-      class="hero-image"
-      src="/images/hero-image.png"
-      alt="Skate crew wearing Ember apparel"
-      loading="eager"
-    />
-  </section>
+<main class="home">
+	<HeroSection
+		imageSrc="/images/hero-image.png"
+		imageAlt="Ember crew in premium streetwear"
+		title="EMBER"
+		tagline="Premium streetwear for everyday movement."
+	/>
 
-  <section class="collections-intro">
-    <h2>Collections</h2>
-  </section>
+	<section class="section">
+		<div class="section-heading">
+			<h2>Featured Collections</h2>
+		</div>
+		<div class="collection-grid">
+			{#each featuredCollections as collection}
+				<CollectionCard
+					href={collection.href}
+					title={collection.title}
+					description={collection.description}
+					imageSrc={collection.imageSrc}
+					imageAlt={collection.imageAlt}
+				/>
+			{/each}
+		</div>
+	</section>
 
-  <section class="collections-grid">
-    <article class="collection-box">
-      <a class="collection-box-link" href="/collections/field-notes">
-        <img
-          src="/images/fieldnotes_home.png"
-          alt="Field Notes collection"
-          loading="lazy"
-        />
-        <div class="collection-box-body">
-          <span class="btn btn-primary collection-cta">Shop Field Notes →</span>
-          <p class="collection-blurb">
-            An ongoing study in form and detail. Field Notes blends utility and
-            refinement, drawing from observation, process, and the beauty of
-            well-made essentials.
-          </p>
-        </div>
-      </a>
-    </article>
+	<section class="statement">
+		<p>
+			Built for everyday movement, made with weight, grit, and comfort in mind.
+			Ember blends clean design with a worn-in edge.
+		</p>
+	</section>
 
-    <article class="collection-box">
-      <a class="collection-box-link" href="/collections/base-camp">
-        <img
-          src="/images/basecamp_home.png"
-          alt="Base Camp collection"
-          loading="lazy"
-        />
-        <div class="collection-box-body">
-          <span class="btn btn-primary collection-cta">Shop Base Camp →</span>
-          <p class="collection-blurb">
-            The foundation. Elevated essentials cut clean, built right, and made
-            to be worn daily without thinking twice.
-          </p>
-        </div>
-      </a>
-    </article>
+	<section class="section">
+		<div class="section-heading">
+			<h2>Best Sellers</h2>
+		</div>
+		<div class="product-grid">
+			{#each curatedProducts as product}
+				<ProductCard
+					href={`/products/${product.handle}`}
+					title={product.title}
+					imageSrc={(product.images?.[0]?.url ?? product.featuredImage?.url) || '/images/hero-image.png'}
+					imageAlt={product.images?.[0]?.altText ?? product.featuredImage?.altText ?? product.title}
+					hoverImageSrc={product.images?.[1]?.url ?? null}
+					hoverImageAlt={product.images?.[1]?.altText ?? product.title}
+					amount={product.priceRange.minVariantPrice.amount}
+					currencyCode={product.priceRange.minVariantPrice.currencyCode}
+				/>
+			{:else}
+				{#each [0, 1, 2, 3] as idx}
+					<ProductCard
+						href="/products"
+						title={`Ember Piece ${idx + 1}`}
+						imageSrc={lookbookImages[(idx + 1) % lookbookImages.length]}
+						imageAlt="Ember product placeholder"
+						amount="98"
+						currencyCode="USD"
+					/>
+				{/each}
+			{/each}
+		</div>
+	</section>
 
-    <article class="collection-box">
-      <a class="collection-box-link" href="/collections/conditions">
-        <img
-          src="/images/conditions_home.png"
-          alt="Conditions collection"
-          loading="lazy"
-        />
-        <div class="collection-box-body">
-          <span class="btn btn-primary collection-cta">Shop Conditions →</span>
-          <p class="collection-blurb">
-            Built for whatever the day throws at you. Conditions focuses on
-            weight, texture, and structure — premium pieces designed to move
-            through shifting environments.
-          </p>
-        </div>
-      </a>
-    </article>
+	<section class="editorial-banner">
+		<img src="/images/shoreditch.png" alt="Ember lifestyle banner" loading="lazy" />
+		<div class="editorial-copy">
+			<p>Quietly premium. Designed to be worn hard.</p>
+			<a href="/about">Explore the Brand</a>
+		</div>
+	</section>
 
-    <article class="collection-box">
-      <a class="collection-box-link" href="/collections/naeba">
-        <img
-          src="/images/naeba_home.png"
-          alt="Naeba collection"
-          loading="lazy"
-        />
-        <div class="collection-box-body">
-          <span class="btn btn-primary collection-cta">Shop Naeba →</span>
-          <p class="collection-blurb">
-            Cold air, clean lines, and movement built into every stitch. Naeba
-            is made for long days, late lifts, and the quiet confidence of
-            well-made gear.
-          </p>
-        </div>
-      </a>
-    </article>
-  </section>
+	<section class="section">
+		<div class="section-heading">
+			<h2>Shop by Category</h2>
+		</div>
+		<div class="category-row">
+			<CategoryTile href="/products?category=tees" label="Tees" />
+			<CategoryTile href="/products?category=long-sleeves" label="Long Sleeves" />
+			<CategoryTile href="/products?category=hoodies" label="Hoodies" />
+			<CategoryTile href="/products?category=bottoms" label="Bottoms" />
+		</div>
+	</section>
 
-  <section class="elevated-basics">
-    <h2>Everyday Wear / Elevated Basics</h2>
-    <p>
-      We believe the best clothing earns its place quietly. Elevated essentials,
-      refined through material and fit, meant to be worn daily without second
-      thought. Strong enough to stand alone. Simple enough to layer.
-    </p>
-  </section>
+	<section class="value-strip" aria-label="Brand values">
+		<div>
+			<strong>Heavyweight feel</strong>
+			<p>Structured fabrics with premium drape.</p>
+		</div>
+		<div>
+			<strong>All-day comfort</strong>
+			<p>Designed to move from morning to late nights.</p>
+		</div>
+		<div>
+			<strong>Small-run drops</strong>
+			<p>Intentional pieces, released in tight batches.</p>
+		</div>
+	</section>
 
-  <section class="shop-all">
-    <div class="shop-all-media">
-      <img
-        src="/images/group_skate_sundown.png"
-        alt="Friends skating together at sundown"
-        loading="lazy"
-      />
-      <div class="shop-all-cta-group">
-        <a class="shop-all-tile shop-all-tile--men" href="/collections/men"
-          >Shop men</a
-        >
-        <a
-          class="shop-all-tile shop-all-tile--unisex"
-          href="/collections/unisex">Shop unisex</a
-        >
-        <a class="shop-all-tile shop-all-tile--women" href="/collections/women"
-          >Shop women</a
-        >
-        <a class="shop-all-tile shop-all-tile--all" href="/products">Shop all</a
-        >
-      </div>
-    </div>
-  </section>
+	<section class="section" id="lookbook">
+		<div class="section-heading">
+			<h2>Lookbook</h2>
+		</div>
+		<div class="lookbook-grid">
+			{#each lookbookImages as imageSrc, idx}
+				<figure class="lookbook-shot">
+					<img src={imageSrc} alt={`Ember lookbook image ${idx + 1}`} loading="lazy" />
+				</figure>
+			{/each}
+		</div>
+	</section>
 
-  {#if dev}
-    <section class="debug-untagged">
-      <h2>Debug: Untagged products</h2>
-      {#if unbucketedProducts.length}
-        <p>
-          These products are not in any of: fieldnotes, basecamp/everyday,
-          conditions, naeba.
-        </p>
-        <ul>
-          {#each unbucketedProducts as product}
-            <li>
-              <code>{product.title}</code>
-              <span>({product.handle})</span>
-              {#if product.tags?.length}
-                <span>– tags: {product.tags.join(", ")}</span>
-              {:else}
-                <span>– no tags</span>
-              {/if}
-            </li>
-          {/each}
-        </ul>
-      {:else}
-        <p>
-          All loaded products are tagged into one of: fieldnotes,
-          basecamp/everyday, conditions, naeba.
-        </p>
-      {/if}
-    </section>
-  {/if}
+	<section class="email-signup">
+		<h2>Join the list</h2>
+		<p>Get early access to drops, restocks, and limited releases.</p>
+		<form onsubmit={(event) => event.preventDefault()}>
+			<input type="email" placeholder="Email address" aria-label="Email address" />
+			<button type="submit">Subscribe</button>
+		</form>
+	</section>
+
+	<SiteFooter />
 </main>
 
 <style>
-  .page {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 0 1.5rem 3.5rem;
-  }
+	:global(body) {
+		background: #0a0d10;
+		color: #ececea;
+	}
 
-  .hero {
-    position: relative;
-    margin: 0 calc(50% - 50vw) 2.75rem;
-    height: 60vh;
-    border-radius: 0;
-    overflow: hidden;
-  }
+	.home {
+		max-width: 1120px;
+		margin: 0 auto;
+		padding: 0 1.5rem 2.5rem;
+	}
 
-  .hero::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-color: rgba(0, 48, 63, 0.7); /* darker brand ink vignette */
-    mix-blend-mode: multiply;
-    z-index: 0;
-  }
+	.section {
+		margin-top: clamp(3rem, 7vw, 6rem);
+	}
 
-  .hero-image {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+	.section-heading {
+		margin-bottom: 1.4rem;
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+	}
 
-  .hero-brand {
-    position: absolute;
-    left: 1.5rem;
-    bottom: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 1;
-  }
+	h2 {
+		margin: 0;
+		font-size: clamp(1.2rem, 3vw, 1.65rem);
+		letter-spacing: 0.04em;
+		font-weight: 600;
+	}
 
-  .hero-logo {
-    display: block;
-    max-width: 360px;
-    width: 100%;
-    height: auto;
-  }
+	.collection-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 1rem;
+	}
 
-  .hero-tagline {
-    margin-top: 0.5rem;
-    color: #ffffff;
-    font-size: 1rem;
-    font-weight: var(--font-weight-semibold);
-  }
+	.statement {
+		margin: clamp(3.5rem, 8vw, 7rem) auto 0;
+		max-width: 72ch;
+		padding: 0 1rem;
+		text-align: center;
+	}
 
-  .shop-all {
-    display: block;
-  }
+	.statement p {
+		margin: 0;
+		color: #c5c7c9;
+		font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+		line-height: 1.65;
+	}
 
-  .gender-nav {
-    margin: var(--space-6) calc(50% - 50vw) var(--space-4);
-    padding: 0.6rem 0;
-    background-color: var(--color-brand-gold);
-  }
+	.product-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 1rem;
+	}
 
-  .gender-nav-inner {
-    max-width: 1120px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-    gap: var(--space-4);
-  }
+	.editorial-banner {
+		position: relative;
+		margin-top: clamp(3rem, 7vw, 6rem);
+	}
 
-  .gender-nav-item {
-    position: relative;
-  }
+	.editorial-banner::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(5, 7, 10, 0.72), rgba(5, 7, 10, 0.2));
+		pointer-events: none;
+	}
 
-  .gender-nav-item > a {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    text-decoration: none;
-    color: #111827;
-    padding: 0.3rem 0.6rem;
-    border-radius: 999px;
-    background-color: rgba(255, 255, 255, 0.16);
-  }
+	.editorial-banner img {
+		width: 100%;
+		height: clamp(260px, 42vw, 420px);
+		object-fit: cover;
+		filter: saturate(0.9) contrast(1.02);
+	}
 
-  .gender-nav-item > a:hover {
-    background-color: rgba(255, 255, 255, 0.28);
-  }
+	.editorial-copy {
+		position: absolute;
+		left: 2rem;
+		bottom: 2rem;
+		max-width: 28rem;
+		z-index: 1;
+	}
 
-  .gender-nav-dropdown {
-    position: absolute;
-    top: 115%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 0.25rem;
-    padding: var(--space-4);
-    background-color: #021f29;
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(0, 0, 0, 0.4);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
-    display: none;
-    gap: var(--space-6);
-    min-width: 460px;
-    z-index: var(--z-nav);
-  }
+	.editorial-copy p {
+		margin: 0;
+		font-size: clamp(1.1rem, 3vw, 1.8rem);
+		line-height: 1.25;
+		font-weight: 500;
+	}
 
-  .gender-nav-column {
-    min-width: 160px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
+	.editorial-copy a {
+		display: inline-block;
+		margin-top: 1rem;
+		color: #f1f3f2;
+		text-decoration: none;
+		text-transform: uppercase;
+		font-size: 0.78rem;
+		letter-spacing: 0.14em;
+		border-bottom: 1px solid rgba(241, 243, 242, 0.7);
+		padding-bottom: 0.2rem;
+	}
 
-  .elevated-basics {
-    margin: var(--space-12) auto var(--space-10);
-    padding: var(--space-6) 0;
-    text-align: left;
-  }
+	.category-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
 
-  .elevated-basics h2 {
-    margin: 0 0 var(--space-2);
-    font-size: 1.7rem;
-    letter-spacing: var(--letter-spacing-tight);
-  }
+	.value-strip {
+		margin-top: clamp(2.8rem, 6vw, 5rem);
+		padding: 1.35rem 1rem;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1rem;
+		border-top: 1px solid #2a2d31;
+		border-bottom: 1px solid #2a2d31;
+	}
 
-  .elevated-basics p {
-    margin: 0;
-    font-size: 1.05rem;
-    color: var(--color-text-muted);
-  }
+	.value-strip strong {
+		font-size: 0.88rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
 
-  .collections-intro {
-    margin-bottom: var(--space-4);
-  }
+	.value-strip p {
+		margin: 0.5rem 0 0;
+		color: #bcc1c6;
+		font-size: 0.88rem;
+	}
 
-  .collections-intro h2 {
-    margin: 0;
-    font-size: 1.4rem;
-    letter-spacing: var(--letter-spacing-tight);
-  }
+	.lookbook-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.8rem;
+	}
 
-  .collections-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-6);
-    margin-bottom: var(--space-8);
-  }
+	.lookbook-shot {
+		margin: 0;
+		overflow: hidden;
+	}
 
-  .collection-box {
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: transparent;
-    overflow: hidden;
-  }
+	.lookbook-shot img {
+		display: block;
+		width: 100%;
+		aspect-ratio: 1 / 1;
+		object-fit: cover;
+		transition: transform 220ms ease;
+	}
 
-  .collection-box-link {
-    display: block;
-    position: relative;
-  }
+	.lookbook-shot:hover img {
+		transform: scale(1.02);
+	}
 
-  .collection-box-link img {
-    display: block;
-    width: 100%;
-    height: 260px;
-    object-fit: cover;
-  }
+	.email-signup {
+		margin-top: clamp(3rem, 7vw, 6rem);
+		padding: clamp(1.4rem, 3.5vw, 2rem);
+		border: 1px solid #2c3035;
+		background: #101316;
+	}
 
-  .collection-box-body {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: var(--space-4);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.78),
-      rgba(0, 0, 0, 0.35),
-      transparent
-    );
-    color: #ffffff;
-    justify-content: flex-end;
-  }
+	.email-signup h2 {
+		margin: 0;
+	}
 
-  .collection-box-body p {
-    margin: 0;
-    font-size: 0.95rem;
-  }
+	.email-signup p {
+		margin: 0.7rem 0 1.2rem;
+		color: #c4c9ce;
+	}
 
-  .collection-box-body .btn {
-    align-self: flex-start;
-    margin-top: var(--space-2);
-    background: transparent;
-    border-color: transparent;
-    box-shadow: none;
-    padding-left: 0;
-    padding-right: 0;
-    text-decoration: underline;
-    color: #ffffff;
-    font-weight: var(--font-weight-bold);
-    font-size: 1rem;
-  }
+	.email-signup form {
+		display: flex;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
 
-  .collection-cta {
-    transition:
-      transform 160ms ease-out,
-      text-decoration-color 160ms ease-out;
-  }
+	.email-signup input {
+		flex: 1 1 240px;
+		padding: 0.8rem 0.9rem;
+		border: 1px solid #32363b;
+		background: #0d1013;
+		color: #ececea;
+	}
 
-  .collection-blurb {
-    opacity: 0;
-    transform: translateY(10px);
-    transition:
-      opacity 160ms ease-out,
-      transform 160ms ease-out;
-    font-size: 0.9rem;
-  }
+	.email-signup button {
+		padding: 0.8rem 1.1rem;
+		border: 1px solid #dfe2e0;
+		background: #e9ebe9;
+		color: #0d1013;
+		text-transform: uppercase;
+		font-size: 0.74rem;
+		letter-spacing: 0.12em;
+		cursor: pointer;
+	}
 
-  .collection-box:hover .collection-box-body {
-    /* hover when either the article or the link is hovered */
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.9),
-      rgba(0, 0, 0, 0.55),
-      transparent
-    );
-  }
+	@media (max-width: 960px) {
+		.collection-grid,
+		.product-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 
-  .collection-box:hover .collection-cta {
-    transform: translateY(-1.5rem);
-  }
+		.lookbook-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 
-  .collection-box:hover .collection-blurb {
-    opacity: 1;
-    transform: translateY(0);
-  }
+		.value-strip {
+			grid-template-columns: 1fr;
+		}
+	}
 
-  .shop-all-media img {
-    display: block;
-    width: 100%;
-    border-radius: var(--radius-md);
-    object-fit: cover;
-  }
+	@media (max-width: 640px) {
+		.home {
+			padding: 0 1rem 2rem;
+		}
 
-  .shop-all-media {
-    position: relative;
-  }
+		.collection-grid,
+		.product-grid,
+		.lookbook-grid {
+			grid-template-columns: 1fr;
+		}
 
-  .shop-all-cta-group {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: 2fr 1fr; /* top row 2/3 height, bottom row 1/3 */
-  }
-
-  .shop-all-tile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.8rem;
-    font-weight: var(--font-weight-medium);
-    color: #ffffff;
-    padding: 1.5rem 0.5rem;
-  }
-
-  .shop-all-tile--all {
-    background-color: rgba(220, 174, 29, 0.7); /* brand gold */
-    color: #021f29;
-    grid-column: 1 / -1; /* span full width under the three columns */
-  }
-
-  .shop-all-tile--women {
-    background-color: rgba(202, 228, 219, 0.55); /* brand mist */
-    color: #021f29;
-  }
-
-  .shop-all-tile--men {
-    background-color: rgba(122, 157, 150, 0.7); /* brand sage */
-  }
-
-  .shop-all-tile--unisex {
-    background-color: rgba(0, 48, 63, 0.78); /* brand ink */
-    color: #ffffff;
-  }
-
-  .debug-untagged {
-    margin-top: var(--space-8);
-    padding: var(--space-4);
-    border-radius: var(--radius-md);
-    border: 1px dashed var(--color-border-subtle);
-    background-color: #fff7ed;
-    font-size: 0.85rem;
-  }
-
-  .debug-untagged h2 {
-    margin: 0 0 0.5rem;
-    font-size: 0.95rem;
-  }
-
-  .debug-untagged ul {
-    margin: 0.25rem 0 0;
-    padding-left: 1.1rem;
-  }
-
-  .debug-untagged li {
-    margin-bottom: 0.25rem;
-  }
-
-  @media (max-width: 768px) {
-    .hero {
-      margin: 0 calc(50% - 50vw) 2rem;
-      width: 100vw;
-      height: 30vh;
-    }
-
-    .hero-brand {
-      top: 50%;
-      left: 50%;
-      bottom: auto;
-      transform: translate(-50%, -50%);
-      align-items: center;
-      text-align: center;
-    }
-
-    .shop-all-cta-group {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: none; /* let rows size naturally when stacked */
-    }
-
-    .collections-grid {
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--space-4);
-    }
-  }
+		.editorial-copy {
+			left: 1rem;
+			right: 1rem;
+			bottom: 1rem;
+		}
+	}
 </style>

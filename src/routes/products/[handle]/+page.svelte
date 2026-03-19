@@ -1,313 +1,365 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { page } from '$app/stores';
-	import { cart } from '$lib/stores/cart';
-	import { excerpt } from '$lib/seo';
-	import { formatPrice } from '$lib/formatPrice';
+  import type { PageData } from "./$types";
+  import { page } from "$app/stores";
+  import { cart } from "$lib/stores/cart";
+  import { excerpt } from "$lib/seo";
+  import { formatPrice } from "$lib/formatPrice";
 
-	let { data }: { data: PageData } = $props();
+  let { data }: { data: PageData } = $props();
 
-	const product = $derived(data.product);
-	const metaDescription = $derived(excerpt(product?.description, 160));
-	const canonical = $derived($page.url.origin + $page.url.pathname);
+  const product = $derived(data.product);
+  const metaDescription = $derived(excerpt(product?.description, 160));
+  const canonical = $derived($page.url.origin + $page.url.pathname);
 
-	// Default to first *available* variant; if all sold out, leave null. Sync when product (page) changes.
-	let selectValue = $state('');
-	$effect(() => {
-		const p = data.product;
-		const first = p.variants.find((v) => v.availableForSale);
-		selectValue = first?.id ?? '';
-	});
-	const selectedVariantId = $derived(selectValue || null);
-	let quantity = $state(1);
-	let submitting = $state(false);
-	let message = $state<string | null>(null);
+  // Default to first *available* variant; if all sold out, leave null. Sync when product (page) changes.
+  let selectValue = $state("");
+  $effect(() => {
+    const p = data.product;
+    const first = p.variants.find((v) => v.availableForSale);
+    selectValue = first?.id ?? "";
+  });
+  const selectedVariantId = $derived(selectValue || null);
+  let quantity = $state(1);
+  let submitting = $state(false);
+  let message = $state<string | null>(null);
 
-	// Clamp quantity so it cannot go below 1 (handles typed values and edge cases).
-	$effect(() => {
-		if (typeof quantity !== 'number' || !Number.isInteger(quantity) || quantity < 1) {
-			quantity = 1;
-		}
-	});
+  // Clamp quantity so it cannot go below 1 (handles typed values and edge cases).
+  $effect(() => {
+    if (
+      typeof quantity !== "number" ||
+      !Number.isInteger(quantity) ||
+      quantity < 1
+    ) {
+      quantity = 1;
+    }
+  });
 
-	const selectedVariant = $derived(
-		product.variants.find((v) => v.id === selectedVariantId)
-	);
-	const canAddToCart = $derived(
-		selectedVariantId != null &&
-			selectedVariant != null &&
-			selectedVariant.availableForSale &&
-			!submitting
-	);
-	const allSoldOut = $derived(
-		product.variants.length > 0 &&
-			product.variants.every((v) => !v.availableForSale)
-	);
+  const selectedVariant = $derived(
+    product.variants.find((v) => v.id === selectedVariantId),
+  );
+  const canAddToCart = $derived(
+    selectedVariantId != null &&
+      selectedVariant != null &&
+      selectedVariant.availableForSale &&
+      !submitting,
+  );
+  const allSoldOut = $derived(
+    product.variants.length > 0 &&
+      product.variants.every((v) => !v.availableForSale),
+  );
 
-	// Gallery: product.images when present, otherwise fallback to featuredImage as single image.
-	const galleryImages = $derived(
-		product.images?.length
-			? product.images
-			: product.featuredImage
-				? [{ url: product.featuredImage.url, altText: product.featuredImage.altText }]
-				: []
-	);
-	let galleryIndex = $state(0);
-	$effect(() => {
-		const len = galleryImages.length;
-		if (len && galleryIndex >= len) galleryIndex = 0;
-	});
+  // Gallery: product.images when present, otherwise fallback to featuredImage as single image.
+  const galleryImages = $derived(
+    product.images?.length
+      ? product.images
+      : product.featuredImage
+        ? [
+            {
+              url: product.featuredImage.url,
+              altText: product.featuredImage.altText,
+            },
+          ]
+        : [],
+  );
+  let galleryIndex = $state(0);
+  let zoomActive = $state(false);
+  let zoomX = $state(50);
+  let zoomY = $state(50);
+  $effect(() => {
+    const len = galleryImages.length;
+    if (len && galleryIndex >= len) galleryIndex = 0;
+  });
 
-	async function handleAddToCart() {
-		message = null;
+  function handleZoomMove(event: MouseEvent) {
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    zoomX = Math.max(0, Math.min(100, x));
+    zoomY = Math.max(0, Math.min(100, y));
+  }
 
-		if (!selectedVariantId) {
-			message = allSoldOut ? 'This product is currently sold out.' : 'Please select a variant.';
-			return;
-		}
+  async function handleAddToCart() {
+    message = null;
 
-		const variant = product.variants.find((v) => v.id === selectedVariantId);
-		if (!variant) {
-			message = 'Please select a variant.';
-			return;
-		}
-		if (!variant.availableForSale) {
-			message = 'This variant is sold out.';
-			return;
-		}
+    if (!selectedVariantId) {
+      message = allSoldOut
+        ? "This product is currently sold out."
+        : "Please select a variant.";
+      return;
+    }
 
-		const qty = Math.max(1, Math.floor(Number(quantity)) || 1);
-		if (!Number.isInteger(qty) || qty < 1) {
-			message = 'Quantity must be at least 1.';
-			return;
-		}
+    const variant = product.variants.find((v) => v.id === selectedVariantId);
+    if (!variant) {
+      message = "Please select a variant.";
+      return;
+    }
+    if (!variant.availableForSale) {
+      message = "This variant is sold out.";
+      return;
+    }
 
-		submitting = true;
-		try {
-			// merchandiseId is the variant's Storefront API id (GID).
-			await cart.addToCart(selectedVariantId, qty);
-			message = 'Added to cart.';
-		} catch (e) {
-			message = e instanceof Error ? e.message : 'Failed to add to cart.';
-		} finally {
-			submitting = false;
-		}
-	}
+    const qty = Math.max(1, Math.floor(Number(quantity)) || 1);
+    if (!Number.isInteger(qty) || qty < 1) {
+      message = "Quantity must be at least 1.";
+      return;
+    }
+
+    submitting = true;
+    try {
+      // merchandiseId is the variant's Storefront API id (GID).
+      await cart.addToCart(selectedVariantId, qty);
+      message = "Added to cart.";
+    } catch (e) {
+      message = e instanceof Error ? e.message : "Failed to add to cart.";
+    } finally {
+      submitting = false;
+    }
+  }
 </script>
 
 <svelte:head>
-	<title>{product.title} | Storefront</title>
-	<meta name="description" content={metaDescription || product.title} />
-	<link rel="canonical" href={canonical} />
-	<meta property="og:type" content="product" />
-	<meta property="og:title" content={product.title} />
-	<meta property="og:description" content={metaDescription || product.title} />
-	<meta property="og:url" content={canonical} />
-	{#if galleryImages.length > 0}
-		<meta property="og:image" content={galleryImages[0].url} />
-		<meta property="og:image:alt" content={galleryImages[0].altText ?? product.title} />
-	{/if}
+  <title>{product.title} | Storefront</title>
+  <meta name="description" content={metaDescription || product.title} />
+  <link rel="canonical" href={canonical} />
+  <meta property="og:type" content="product" />
+  <meta property="og:title" content={product.title} />
+  <meta property="og:description" content={metaDescription || product.title} />
+  <meta property="og:url" content={canonical} />
+  {#if galleryImages.length > 0}
+    <meta property="og:image" content={galleryImages[0].url} />
+    <meta
+      property="og:image:alt"
+      content={galleryImages[0].altText ?? product.title}
+    />
+  {/if}
 </svelte:head>
 
 <main class="page">
-	<a class="back" href="/">← Back to products</a>
+  <a class="back" href="/">← Back to products</a>
 
-	<section class="product">
-		{#if galleryImages.length > 0}
-			<div class="gallery">
-				<div class="gallery-main">
-					<img
-						src={galleryImages[galleryIndex].url}
-						alt={galleryImages[galleryIndex].altText ?? product.title}
-						loading={galleryIndex === 0 ? 'eager' : 'lazy'}
-					/>
-				</div>
-				{#if galleryImages.length > 1}
-					<div class="gallery-thumbs">
-						{#each galleryImages as img, i}
-							<button
-								type="button"
-								class="thumb"
-								class:active={i === galleryIndex}
-								aria-label="View image {i + 1}"
-								onclick={() => (galleryIndex = i)}
-							>
-								<img src={img.url} alt="" loading="lazy" />
-							</button>
-						{/each}
-					</div>
-				{/if}
-			</div>
-		{/if}
+  <section class="product">
+    {#if galleryImages.length > 0}
+      <div class="gallery">
+        <div
+          class="gallery-main"
+          role="region"
+          aria-label="Product image preview"
+          onmouseenter={() => (zoomActive = true)}
+          onmouseleave={() => (zoomActive = false)}
+          onmousemove={handleZoomMove}
+        >
+          <img
+            src={galleryImages[galleryIndex].url}
+            alt={galleryImages[galleryIndex].altText ?? product.title}
+            loading={galleryIndex === 0 ? "eager" : "lazy"}
+          />
+          {#if zoomActive}
+            <div
+              class="zoom-pop"
+              style={`background-image: url('${galleryImages[galleryIndex].url}'); background-position: ${zoomX}% ${zoomY}%;`}
+              aria-hidden="true"
+            ></div>
+          {/if}
+        </div>
+        {#if galleryImages.length > 1}
+          <div class="gallery-thumbs">
+            {#each galleryImages as img, i}
+              <button
+                type="button"
+                class="thumb"
+                class:active={i === galleryIndex}
+                aria-label="View image {i + 1}"
+                onclick={() => (galleryIndex = i)}
+              >
+                <img src={img.url} alt="" loading="lazy" />
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    {/if}
 
-		<div class="details">
-			<h1>{product.title}</h1>
-			<p class="price">
-				{formatPrice(product.priceRange.minVariantPrice.amount, product.priceRange.minVariantPrice.currencyCode)}
-			</p>
+    <div class="details">
+      <h1>{product.title}</h1>
+      <p class="price">
+        {formatPrice(
+          product.priceRange.minVariantPrice.amount,
+          product.priceRange.minVariantPrice.currencyCode,
+        )}
+      </p>
 
-			{#if product.variants.length > 0}
-				<label>
-					<span>Variant</span>
-					<select bind:value={selectValue}>
-						<option value="">Choose variant</option>
-						{#each product.variants as variant}
-							<option value={variant.id} disabled={!variant.availableForSale}>
-								{variant.title} {!variant.availableForSale ? '(Sold out)' : ''}
-							</option>
-						{/each}
-					</select>
-				</label>
-			{/if}
+      {#if product.variants.length > 0}
+        <label>
+          <span>Variant</span>
+          <select bind:value={selectValue}>
+            <option value="">Choose variant</option>
+            {#each product.variants as variant}
+              <option value={variant.id} disabled={!variant.availableForSale}>
+                {variant.title}
+                {!variant.availableForSale ? "(Sold out)" : ""}
+              </option>
+            {/each}
+          </select>
+        </label>
+      {/if}
 
-			<label>
-				<span>Quantity</span>
-				<input
-					type="number"
-					min="1"
-					step="1"
-					bind:value={quantity}
-				/>
-			</label>
+      <label>
+        <span>Quantity</span>
+        <input type="number" min="1" step="1" bind:value={quantity} />
+      </label>
 
-			<button
-				class="btn btn-primary"
-				onclick={(e) => {
-					e.preventDefault();
-					handleAddToCart();
-				}}
-				disabled={!canAddToCart}
-			>
-				{allSoldOut ? 'Sold out' : submitting ? 'Adding…' : 'Add to cart'}
-			</button>
+      <button
+        class="btn btn-primary"
+        onclick={(e) => {
+          e.preventDefault();
+          handleAddToCart();
+        }}
+        disabled={!canAddToCart}
+      >
+        {allSoldOut ? "Sold out" : submitting ? "Adding…" : "Add to cart"}
+      </button>
 
-			{#if message}
-				<p class="message">{message}</p>
-			{/if}
+      {#if message}
+        <p class="message">{message}</p>
+      {/if}
 
-			{#if product.description}
-				<div class="description">
-					<p>{product.description}</p>
-				</div>
-			{/if}
-		</div>
-	</section>
+    </div>
+  </section>
 </main>
 
 <style>
-	.page {
-		max-width: 960px;
-		margin: 0 auto;
-		padding: 2rem 1rem 3rem;
-	}
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+  }
 
-	.back {
-		display: inline-block;
-		margin-bottom: 1.5rem;
-		text-decoration: none;
-		color: #444;
-	}
+  .back {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+    color: #444;
+  }
 
-	.product {
-		display: grid;
-		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-		gap: 2rem;
-		align-items: flex-start;
-	}
+  .product {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 2rem;
+    align-items: flex-start;
+  }
 
-	.gallery-main img {
-		width: 100%;
-		border-radius: 0.5rem;
-		object-fit: cover;
-	}
+  .gallery-main img {
+    width: 100%;
+    border-radius: 0.5rem;
+    object-fit: cover;
+  }
 
-	.gallery-thumbs {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		margin-top: 0.75rem;
-	}
+  .gallery-main {
+    position: relative;
+  }
 
-	.gallery-thumbs .thumb {
-		width: 3rem;
-		height: 3rem;
-		padding: 0;
-		border: 2px solid #e5e7eb;
-		border-radius: 0.25rem;
-		background: none;
-		cursor: pointer;
-		overflow: hidden;
-	}
+  .zoom-pop {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 0.75rem);
+    width: min(42vw, 420px);
+    aspect-ratio: 1 / 1;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    background-repeat: no-repeat;
+    background-size: 280%;
+    background-color: #ffffff;
+    pointer-events: none;
+    z-index: 2;
+  }
 
-	.gallery-thumbs .thumb.active {
-		border-color: #111827;
-	}
+  .gallery-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
 
-	.gallery-thumbs .thumb img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
+  .gallery-thumbs .thumb {
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.25rem;
+    background: none;
+    cursor: pointer;
+    overflow: hidden;
+  }
 
-	.details h1 {
-		margin-bottom: 0.5rem;
-	}
+  .gallery-thumbs .thumb.active {
+    border-color: #111827;
+  }
 
-	.price {
-		font-weight: 600;
-		margin-bottom: 1.5rem;
-	}
+  .gallery-thumbs .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-	label {
-		display: block;
-		margin-bottom: 1rem;
-	}
+  .details h1 {
+    margin-bottom: 0.5rem;
+  }
 
-	label span {
-		display: block;
-		font-size: 0.875rem;
-		margin-bottom: 0.25rem;
-		color: #555;
-	}
+  .price {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
 
-	select,
-	input[type='number'] {
-		width: 100%;
-		padding: 0.4rem 0.5rem;
-		border-radius: 0.25rem;
-		border: 1px solid #ccc;
-	}
+  label {
+    display: block;
+    margin-bottom: 1rem;
+  }
 
-	button {
-		margin-top: 0.5rem;
-		padding: 0.6rem 1.2rem;
-		border-radius: 0.25rem;
-		border: none;
-		background: #111827;
-		color: white;
-		cursor: pointer;
-	}
+  label span {
+    display: block;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    color: #555;
+  }
 
-	button:disabled {
-		opacity: 0.7;
-		cursor: default;
-	}
+  select,
+  input[type="number"] {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #ccc;
+  }
 
-	.message {
-		margin-top: 0.75rem;
-		font-size: 0.9rem;
-		color: #065f46;
-	}
+  button {
+    margin-top: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.25rem;
+    border: none;
+    background: #111827;
+    color: white;
+    cursor: pointer;
+  }
 
-	.description {
-		margin-top: 1.5rem;
-		color: #444;
-	}
+  button:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
 
-	@media (max-width: 768px) {
-		.product {
-			grid-template-columns: 1fr;
-		}
-	}
+  .message {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: #065f46;
+  }
+
+  @media (max-width: 768px) {
+    .product {
+      grid-template-columns: 1fr;
+    }
+
+    .zoom-pop {
+      display: none;
+    }
+  }
 </style>
-

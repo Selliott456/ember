@@ -7,13 +7,15 @@ const TAG_COLLECTIONS: Record<string, { title: string; tags: string[] }> = {
 	'field-notes': { title: 'Field Notes', tags: ['fieldnotes'] },
 	'base-camp': { title: 'Base Camp', tags: ['basecamp', 'everyday'] },
 	conditions: { title: 'Conditions', tags: ['conditions'] },
-	naeba: { title: 'Naeba', tags: ['naeba'] }
+	naeba: { title: 'Naeba', tags: ['naeba'] },
+	hanko: { title: 'Hanko', tags: ['hanko'] },
+	badbish: { title: 'Badbish', tags: ['badbish', 'bad-bish', 'bad bish'] }
 };
 
 export const load: PageServerLoad = async ({ params }) => {
 	const handle = params.handle;
 
-	// For our four main collections, derive products from tags instead of Shopify collections.
+	// For our featured collections, derive products from tags instead of Shopify collections.
 	const tagConfig = TAG_COLLECTIONS[handle];
 	if (tagConfig) {
 		const result = await getProducts(PRODUCTS_PER_COLLECTION);

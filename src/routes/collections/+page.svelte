@@ -1,11 +1,44 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 
-	let { data }: { data: PageData } = $props();
-
-	const collections = $derived(data.collections);
-	const error = $derived(data.error);
+	const homeCollections = [
+		{
+			handle: 'field-notes',
+			title: 'Field Notes',
+			image: '/images/fieldnotes_home.png',
+			alt: 'Field Notes collection'
+		},
+		{
+			handle: 'base-camp',
+			title: 'Base Camp',
+			image: '/images/basecamp_home.png',
+			alt: 'Base Camp collection'
+		},
+		{
+			handle: 'conditions',
+			title: 'Conditions',
+			image: '/images/conditions_home.png',
+			alt: 'Conditions collection'
+		},
+		{
+			handle: 'naeba',
+			title: 'Naeba',
+			image: '/images/naeba_home.png',
+			alt: 'Naeba collection'
+		},
+		{
+			handle: 'hanko',
+			title: 'Hanko',
+			image: '/images/hanko_sweater.png',
+			alt: 'Hanko collection'
+		},
+		{
+			handle: 'badbish',
+			title: 'Badbish',
+			image: '/images/badbish.png',
+			alt: 'Badbish collection'
+		}
+	];
 	const canonical = $derived($page.url.origin + $page.url.pathname);
 </script>
 
@@ -23,32 +56,16 @@
 	<h1>Collections</h1>
 	<a class="back" href="/">← Back to home</a>
 
-	{#if error}
-		<p class="error">{error}</p>
-	{/if}
-
-	{#if collections.length === 0 && !error}
-		<p>No collections found.</p>
-	{:else}
-		<ul class="collection-grid">
-			{#each collections as collection}
-				<li class="collection-card">
-					<a href="/collections/{collection.handle}">
-						{#if collection.image}
-							<img
-								src={collection.image.url}
-								alt={collection.image.altText ?? collection.title}
-								loading="lazy"
-							/>
-						{:else}
-							<div class="collection-placeholder">No image</div>
-						{/if}
-						<h2>{collection.title}</h2>
-					</a>
-				</li>
-			{/each}
-		</ul>
-	{/if}
+	<ul class="collection-grid">
+		{#each homeCollections as collection}
+			<li class="collection-card">
+				<a href="/collections/{collection.handle}">
+					<img src={collection.image} alt={collection.alt} loading="lazy" />
+					<h2>{collection.title}</h2>
+				</a>
+			</li>
+		{/each}
+	</ul>
 </main>
 
 <style>
@@ -100,25 +117,8 @@
 		margin-bottom: 0.5rem;
 	}
 
-	.collection-placeholder {
-		width: 100%;
-		height: 200px;
-		background: #f3f4f6;
-		border-radius: 0.5rem;
-		margin-bottom: 0.5rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 0.875rem;
-		color: #6b7280;
-	}
-
 	.collection-card h2 {
 		font-size: 1rem;
 		margin: 0;
-	}
-
-	.error {
-		color: #b00020;
 	}
 </style>
