@@ -4,6 +4,7 @@
   import { excerpt } from "$lib/seo";
   import { formatPrice } from "$lib/formatPrice";
   import HankoCollectionHero from "$lib/components/collections/HankoCollectionHero.svelte";
+  import NaebaCollectionHero from "$lib/components/collections/NaebaCollectionHero.svelte";
 
   let { data }: { data: PageData } = $props();
 
@@ -11,6 +12,7 @@
   const products = $derived(data.products);
   const error = $derived(data.error);
   const isHankoCollection = $derived(collection?.handle === "hanko");
+  const isNaebaCollection = $derived(collection?.handle === "naeba");
   const metaDescription = $derived(
     collection ? excerpt(collection.description, 160) || collection.title : "",
   );
@@ -65,11 +67,17 @@
     {#if isHankoCollection}
       <HankoCollectionHero imageSrc="/images/Hanko-fonts.png" />
       <a class="back" href="/collections">← All collections</a>
+    {:else if isNaebaCollection}
+      <NaebaCollectionHero imageSrc="/images/naeba_hero.png" />
+      <a class="back" href="/collections">← All collections</a>
     {:else}
       <a class="back" href="/collections">← All collections</a>
     {/if}
 
     <h1>{collection.title}</h1>
+    {#if isNaebaCollection}
+      <p class="naeba-drop-anchor" id="drop" aria-hidden="true"></p>
+    {/if}
     {#if collection.description}
       <p class="description">{collection.description}</p>
     {/if}
@@ -82,7 +90,7 @@
   {#if products.length === 0 && !error}
     <p>No products in this collection.</p>
   {:else if products.length > 0}
-    <ul class="product-grid">
+    <ul class="product-grid" id="products">
       {#each products as product}
         <li class="product-card">
           <a href="/products/{product.handle}">
@@ -143,6 +151,11 @@
   .description {
     margin-bottom: 1.5rem;
     color: #555;
+  }
+
+  .naeba-drop-anchor {
+    margin: 0;
+    height: 0;
   }
 
   .product-grid {
