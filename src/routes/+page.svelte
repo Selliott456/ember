@@ -43,7 +43,7 @@
 		}
 	] as const;
 
-	const curatedProducts = $derived(products.slice(0, 4));
+	const curatedProducts = $derived(products.slice(0, 8));
 
 	function getColorOptions(product: any): string[] {
 		const seen = new Set<string>();
@@ -152,7 +152,7 @@
 					colorOptions={getColorOptions(product)}
 				/>
 			{:else}
-				{#each [0, 1, 2, 3] as idx}
+				{#each [0, 1, 2, 3, 4, 5, 6, 7] as idx}
 					<ProductCard
 						href="/products"
 						title={`Ember Piece ${idx + 1}`}

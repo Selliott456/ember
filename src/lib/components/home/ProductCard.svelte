@@ -87,7 +87,8 @@
 	.image-wrap {
 		position: relative;
 		overflow: hidden;
-		background: #111315;
+		background: transparent;
+		line-height: 0;
 	}
 
 	.image-wrap img {
