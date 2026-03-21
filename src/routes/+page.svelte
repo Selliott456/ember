@@ -45,6 +45,22 @@
 
 	const curatedProducts = $derived(products.slice(0, 4));
 
+	function getColorOptions(product: any): string[] {
+		const seen = new Set<string>();
+		const colors: string[] = [];
+		for (const variant of product.variants ?? []) {
+			const title = String(variant.title ?? '').trim();
+			if (!title || title.toLowerCase() === 'default title') continue;
+			const firstOption = title.split('/')[0]?.trim();
+			if (!firstOption) continue;
+			const key = firstOption.toLowerCase();
+			if (seen.has(key)) continue;
+			seen.add(key);
+			colors.push(firstOption);
+		}
+		return colors.slice(0, 5);
+	}
+
 	const lookbookImages = [
 		'/images/couple_street.png',
 		'/images/group_skatepark.png',
@@ -133,6 +149,7 @@
 					hoverImageAlt={product.images?.[1]?.altText ?? product.title}
 					amount={product.priceRange.minVariantPrice.amount}
 					currencyCode={product.priceRange.minVariantPrice.currencyCode}
+					colorOptions={getColorOptions(product)}
 				/>
 			{:else}
 				{#each [0, 1, 2, 3] as idx}

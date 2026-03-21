@@ -6,6 +6,7 @@
   import HankoCollectionHero from "$lib/components/collections/HankoCollectionHero.svelte";
   import NaebaCollectionHero from "$lib/components/collections/NaebaCollectionHero.svelte";
   import BadbishCollectionHero from "$lib/components/collections/BadbishCollectionHero.svelte";
+  import ConditionsCollectionHero from "$lib/components/collections/ConditionsCollectionHero.svelte";
 
   let { data }: { data: PageData } = $props();
 
@@ -15,6 +16,7 @@
   const isHankoCollection = $derived(collection?.handle === "hanko");
   const isNaebaCollection = $derived(collection?.handle === "naeba");
   const isBadbishCollection = $derived(collection?.handle === "badbish");
+  const isConditionsCollection = $derived(collection?.handle === "conditions");
   const metaDescription = $derived(
     collection ? excerpt(collection.description, 160) || collection.title : "",
   );
@@ -42,6 +44,54 @@
     if (!images.length) return;
     const current = imageIndexById[product.id] ?? 0;
     imageIndexById[product.id] = (current + 1) % images.length;
+  }
+
+  function getColorOptions(product: any): string[] {
+    const seen = new Set<string>();
+    const colors: string[] = [];
+    for (const variant of product.variants ?? []) {
+      const title = String(variant.title ?? "").trim();
+      if (!title || title.toLowerCase() === "default title") continue;
+      const firstOption = title.split("/")[0]?.trim();
+      if (!firstOption) continue;
+      const key = firstOption.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      colors.push(firstOption);
+    }
+    return colors.slice(0, 5);
+  }
+
+  function swatchColor(name: string): string {
+    const key = name.toLowerCase().trim();
+    const map: Record<string, string> = {
+      black: "#111111",
+      charcoal: "#3b3f46",
+      grey: "#8b9099",
+      gray: "#8b9099",
+      white: "#f5f5f5",
+      cream: "#eee7db",
+      ivory: "#f2ede2",
+      navy: "#22324a",
+      blue: "#3a6ea5",
+      red: "#9f2f2f",
+      burgundy: "#5f1f2c",
+      green: "#4e6b59",
+      olive: "#6b6b4c",
+      brown: "#6b4f3a",
+      tan: "#b39372",
+      khaki: "#a29475",
+      beige: "#cabaa0",
+      purple: "#6b5f91",
+      pink: "#b97787",
+      yellow: "#d4b84e",
+      gold: "#caa84a",
+      orange: "#c47a3c",
+    };
+    for (const token of Object.keys(map)) {
+      if (key.includes(token)) return map[token];
+    }
+    return "#d1d5db";
   }
 </script>
 
@@ -74,6 +124,9 @@
       <a class="back" href="/collections">← All collections</a>
     {:else if isBadbishCollection}
       <BadbishCollectionHero imageSrc="/images/badbish_group.png" />
+      <a class="back" href="/collections">← All collections</a>
+    {:else if isConditionsCollection}
+      <ConditionsCollectionHero imageSrc="/images/conditions_home.png" />
       <a class="back" href="/collections">← All collections</a>
     {:else}
       <a class="back" href="/collections">← All collections</a>
@@ -121,6 +174,18 @@
               <div class="image-hint image-hint-left">←</div>
               <div class="image-hint image-hint-right">→</div>
             </div>
+            {#if getColorOptions(product).length}
+              <div class="swatches" aria-label="Available colors">
+                {#each getColorOptions(product) as color}
+                  <span
+                    class="swatch"
+                    style={`background-color: ${swatchColor(color)}`}
+                    title={color}
+                    aria-label={color}
+                  ></span>
+                {/each}
+              </div>
+            {/if}
             <h2>{product.title}</h2>
             <p class="price">
               {formatPrice(
@@ -239,6 +304,20 @@
 
   .price {
     font-weight: 600;
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.32rem;
+    margin: 0.2rem 0 0.45rem;
+  }
+
+  .swatch {
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
   }
 
   .error {

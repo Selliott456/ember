@@ -1,26 +1,26 @@
 <script lang="ts">
-	export let imageSrc = '/images/badbish_group.png';
+	export let imageSrc = '/images/conditions_home.png';
 </script>
 
-<section class="badbish-hero" style={`--hero-image: url('${imageSrc}')`}>
+<section class="conditions-hero" style={`--hero-image: url('${imageSrc}')`}>
 	<div class="overlay"></div>
 	<div class="content">
-		<p class="eyebrow">Badbish Collection</p>
-		<h2>Power, remembered differently</h2>
+		<p class="eyebrow">Conditions Collection</p>
+		<h2>Defined by what shapes us</h2>
 		<p class="body">
-			Inspired by the women of Greek mythology, this collection reclaims stories
-			shaped by defiance, consequence, and survival. Each piece draws from
-			figures who were feared, punished, or rewritten — carried forward as a
-			quieter mark of strength, presence, and refusal to disappear.
+			Inspired by the environments we move through and the pressures we carry,
+			this collection reflects the quiet forces that leave their mark. Each
+			piece is shaped by tension, adaptation, and change — worn as a record of
+			what we&apos;ve moved through, and what remains.
 		</p>
 	</div>
 </section>
 
 <style>
-	.badbish-hero {
+	.conditions-hero {
 		position: relative;
 		margin: 0 calc(50% - 50vw) 1.4rem;
-		min-height: clamp(400px, 58vw, 560px);
+		min-height: clamp(380px, 56vw, 540px);
 		background-image: var(--hero-image);
 		background-size: cover;
 		background-position: center;
@@ -34,9 +34,9 @@
 		inset: 0;
 		background: linear-gradient(
 			to top,
-			rgba(7, 8, 10, 0.9),
-			rgba(7, 8, 10, 0.58),
-			rgba(7, 8, 10, 0.2)
+			rgba(10, 11, 12, 0.9),
+			rgba(10, 11, 12, 0.58),
+			rgba(10, 11, 12, 0.2)
 		);
 	}
 

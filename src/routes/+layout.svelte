@@ -56,7 +56,10 @@
             href="/collections"
             data-active={currentPath.startsWith("/collections")}>Collections</a
           >
-          <a href="/products" data-active={false}>New Arrivals</a>
+          <a
+            href="/new-arrivals"
+            data-active={currentPath.startsWith("/new-arrivals")}>New Arrivals</a
+          >
           <a href="/about" data-active={currentPath.startsWith("/about")}
             >About</a
           >
