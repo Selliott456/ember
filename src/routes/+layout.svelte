@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import "$lib/theme.css";
   import { cart } from "$lib/stores/cart";
+  import SiteFooter from "$lib/components/home/SiteFooter.svelte";
 
   let { children } = $props();
 
@@ -130,6 +131,7 @@
   <main class="app-main">
     {@render children()}
   </main>
+  <SiteFooter />
 </div>
 
 <style>

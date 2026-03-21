@@ -13,6 +13,15 @@
 		your items are made, prepared, and shipped after your order is placed.
 	</p>
 
+	<section class="notice">
+		<h2>Customs &amp; import charges</h2>
+		<p>
+			International orders may be subject to customs duties or import taxes upon
+			arrival. These charges are determined by local authorities and are not
+			included at checkout.
+		</p>
+	</section>
+
 	<section>
 		<h2>Processing time</h2>
 		<p>Orders are typically processed within 2–5 business days before shipping.</p>
@@ -77,5 +86,21 @@
 	ul {
 		margin: 0.45rem 0 0.8rem;
 		padding-left: 1.1rem;
+	}
+
+	.notice {
+		margin: 1rem 0 0.4rem;
+		padding: 0.9rem 1rem;
+		border: 1px solid #f1c9c9;
+		background: #fff3f3;
+	}
+
+	.notice h2 {
+		margin-top: 0;
+	}
+
+	.notice p {
+		margin: 0.4rem 0 0;
+		color: #7f1d1d;
 	}
 </style>
