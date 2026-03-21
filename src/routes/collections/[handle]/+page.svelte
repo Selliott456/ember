@@ -7,6 +7,8 @@
   import NaebaCollectionHero from "$lib/components/collections/NaebaCollectionHero.svelte";
   import BadbishCollectionHero from "$lib/components/collections/BadbishCollectionHero.svelte";
   import ConditionsCollectionHero from "$lib/components/collections/ConditionsCollectionHero.svelte";
+  import FieldNotesCollectionHero from "$lib/components/collections/FieldNotesCollectionHero.svelte";
+  import BasecampCollectionHero from "$lib/components/collections/BasecampCollectionHero.svelte";
 
   let { data }: { data: PageData } = $props();
 
@@ -17,6 +19,8 @@
   const isNaebaCollection = $derived(collection?.handle === "naeba");
   const isBadbishCollection = $derived(collection?.handle === "badbish");
   const isConditionsCollection = $derived(collection?.handle === "conditions");
+  const isFieldNotesCollection = $derived(collection?.handle === "field-notes");
+  const isBasecampCollection = $derived(collection?.handle === "base-camp");
   const metaDescription = $derived(
     collection ? excerpt(collection.description, 160) || collection.title : "",
   );
@@ -127,6 +131,12 @@
       <a class="back" href="/collections">← All collections</a>
     {:else if isConditionsCollection}
       <ConditionsCollectionHero imageSrc="/images/conditions_home.png" />
+      <a class="back" href="/collections">← All collections</a>
+    {:else if isFieldNotesCollection}
+      <FieldNotesCollectionHero imageSrc="/images/fieldnotes_hero.png" />
+      <a class="back" href="/collections">← All collections</a>
+    {:else if isBasecampCollection}
+      <BasecampCollectionHero imageSrc="/images/couple_skatepark.png" />
       <a class="back" href="/collections">← All collections</a>
     {:else}
       <a class="back" href="/collections">← All collections</a>

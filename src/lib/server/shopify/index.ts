@@ -35,6 +35,10 @@ export type ShopifyStructuredError = {
 
 type ProductListResponse = {
   products: {
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor: string | null;
+    };
     edges: { node: ProductNode }[];
   };
 };
@@ -66,6 +70,10 @@ type CollectionNode = {
 type CollectionWithProductsNode = CollectionNode & {
   description?: string | null;
   products: {
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor: string | null;
+    };
     edges: { node: ProductNode }[];
   };
 };
@@ -107,6 +115,7 @@ type ProductNode = {
   id: string;
   handle: string;
   title: string;
+  productType?: string;
   description: string;
   tags?: string[];
   featuredImage: {
@@ -201,6 +210,7 @@ function mapProduct(node: ProductNode): Product {
     id: node.id,
     handle: node.handle,
     title: node.title,
+    productType: node.productType,
     description: node.description,
     tags: node.tags,
     featuredImage: node.featuredImage
@@ -241,14 +251,6 @@ function mapCollection(node: CollectionNode): Collection {
     image: node.image
       ? { url: node.image.url, altText: node.image.altText }
       : undefined
-  };
-}
-
-function mapCollectionWithProducts(node: CollectionWithProductsNode): Collection {
-  return {
-    ...mapCollection(node),
-    description: node.description || undefined,
-    products: node.products.edges.map(({ node: p }) => mapProduct(p))
   };
 }
 
@@ -378,12 +380,13 @@ function wrapClientError(e: unknown, operationName: string): ShopifyOperationRes
 const OP_GET_PRODUCTS = 'ProductList';
 
 export async function getProducts(
-  first = 20
+  first = 20,
+  after?: string | null
 ): Promise<ShopifyOperationResult<Product[]>> {
   try {
     const res = await shopifyQuery<ProductListResponse>({
       query: PRODUCT_LIST_QUERY,
-      variables: { first },
+      variables: { first, after: after ?? null },
       operationName: OP_GET_PRODUCTS
     });
 
@@ -402,6 +405,52 @@ export async function getProducts(
     return { ok: true, data: products };
   } catch (e) {
     return wrapClientError(e, OP_GET_PRODUCTS) as ShopifyOperationResult<Product[]>;
+  }
+}
+
+const OP_GET_ALL_PRODUCTS = 'ProductList';
+const MAX_PRODUCTS_PAGE_SIZE = 250;
+const MAX_PRODUCTS_PAGES = 20;
+
+export async function getAllProducts(
+  pageSize = MAX_PRODUCTS_PAGE_SIZE
+): Promise<ShopifyOperationResult<Product[]>> {
+  try {
+    const size = Math.max(1, Math.min(pageSize, MAX_PRODUCTS_PAGE_SIZE));
+    const all: Product[] = [];
+    let after: string | null = null;
+    let hasNextPage = true;
+    let pageCount = 0;
+
+    while (hasNextPage && pageCount < MAX_PRODUCTS_PAGES) {
+      const res = await shopifyQuery<ProductListResponse>({
+        query: PRODUCT_LIST_QUERY,
+        variables: { first: size, after },
+        operationName: OP_GET_ALL_PRODUCTS
+      });
+
+      if (!res.data?.products) {
+        return {
+          ok: false,
+          data: all,
+          error: { code: 'SHOPIFY_ERROR', message: 'Failed to fetch products' },
+          status: 502
+        };
+      }
+
+      const pageProducts = res.data.products.edges.map(
+        (edge: { node: ProductNode }) => mapProduct(edge.node)
+      );
+      all.push(...pageProducts);
+
+      hasNextPage = res.data.products.pageInfo.hasNextPage;
+      after = res.data.products.pageInfo.endCursor;
+      pageCount += 1;
+    }
+
+    return { ok: true, data: all };
+  } catch (e) {
+    return wrapClientError(e, OP_GET_ALL_PRODUCTS) as ShopifyOperationResult<Product[]>;
   }
 }
 
@@ -464,16 +513,55 @@ export async function getCollectionByHandle(
   productsFirst = 50
 ): Promise<ShopifyOperationResult<Collection | null>> {
   try {
-    const res = await shopifyQuery<CollectionByHandleResponse>({
-      query: COLLECTION_BY_HANDLE_QUERY,
-      variables: { handle, productsFirst },
-      operationName: OP_GET_COLLECTION_BY_HANDLE
-    });
+    const pageSize = Math.max(1, Math.min(productsFirst, 250));
+    let after: string | null = null;
+    let hasNextPage = true;
+    let pageCount = 0;
+    const MAX_COLLECTION_PAGES = 20;
 
-    const node = res.data?.collection ?? null;
+    let baseNode: CollectionNode | null = null;
+    let description: string | undefined;
+    const products: Product[] = [];
+
+    while (hasNextPage && pageCount < MAX_COLLECTION_PAGES) {
+      const res = await shopifyQuery<CollectionByHandleResponse>({
+        query: COLLECTION_BY_HANDLE_QUERY,
+        variables: { handle, productsFirst: pageSize, productsAfter: after },
+        operationName: OP_GET_COLLECTION_BY_HANDLE
+      });
+
+      const node = res.data?.collection ?? null;
+      if (!node) {
+        return { ok: true, data: null };
+      }
+
+      if (!baseNode) {
+        baseNode = {
+          id: node.id,
+          handle: node.handle,
+          title: node.title,
+          image: node.image
+        };
+        description = node.description || undefined;
+      }
+
+      const pageProducts = node.products.edges.map(({ node: p }) => mapProduct(p));
+      products.push(...pageProducts);
+
+      hasNextPage = node.products.pageInfo.hasNextPage;
+      after = node.products.pageInfo.endCursor;
+      pageCount += 1;
+    }
+
     return {
       ok: true,
-      data: node ? mapCollectionWithProducts(node) : null
+      data: baseNode
+        ? {
+            ...mapCollection(baseNode),
+            description,
+            products
+          }
+        : null
     };
   } catch (e) {
     return wrapClientError(e, OP_GET_COLLECTION_BY_HANDLE) as ShopifyOperationResult<Collection | null>;

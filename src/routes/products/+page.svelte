@@ -14,22 +14,54 @@
 		$page.url.searchParams.get('collection')?.toLowerCase() ?? null
 	);
 	const typeFilter = $derived($page.url.searchParams.get('type')?.toLowerCase() ?? null);
+	const COLLECTION_TAG_MAP: Record<string, string[]> = {
+		hanko: ['hanko'],
+		badbish: ['badbish', 'bad-bish', 'bad bish'],
+		'field-notes': ['fieldnotes', 'field-notes', 'field notes'],
+		'base-camp': ['basecamp', 'base-camp', 'base camp', 'everyday'],
+		conditions: ['conditions'],
+		naeba: ['naeba']
+	};
 
 	const TYPE_TAG_MAP: Record<string, string[]> = {
 		tee: ['tee', 'tees', 't-shirt', 't-shirts'],
+		'long-sleeve': ['long-sleeve', 'long sleeves', 'long-sleeves', 'long sleeve'],
 		hoodie: ['hoodie', 'hoodies', 'hooded'],
-		sweater: ['sweater', 'sweaters', 'knit'],
+		sweater: ['sweater', 'sweaters', 'knit', 'knitwear', 'crewneck', 'sweatshirt', 'jumper'],
 		pants: ['pants', 'trousers', 'joggers', 'jogger', 'shorts'],
+		bottoms: ['pants', 'trousers', 'joggers', 'jogger', 'shorts', 'bottom', 'bottoms'],
 		jeans: ['jeans', 'denim']
 	};
 
+	function tagMatchesAny(tag: string, allowed: string[]) {
+		const normalizedTag = tag.toLowerCase().trim();
+		return allowed.some((candidate) => {
+			const normalizedCandidate = candidate.toLowerCase().trim();
+			return (
+				normalizedTag === normalizedCandidate ||
+				normalizedTag.includes(normalizedCandidate) ||
+				normalizedCandidate.includes(normalizedTag)
+			);
+		});
+	}
+
 	function matchesFilter(product: any) {
 		const tags = (product.tags ?? []).map((t: string) => t.toLowerCase());
+		const title = String(product.title ?? '').toLowerCase();
+		const productType = String(product.productType ?? '').toLowerCase();
 		if (genderFilter && !tags.includes(genderFilter)) return false;
-		if (collectionFilter && !tags.includes(collectionFilter)) return false;
+		if (collectionFilter) {
+			const allowedCollections = COLLECTION_TAG_MAP[collectionFilter] ?? [collectionFilter];
+			if (!tags.some((tag: string) => tagMatchesAny(tag, allowedCollections))) return false;
+		}
 		if (typeFilter) {
 			const allowed = TYPE_TAG_MAP[typeFilter] ?? [typeFilter];
-			if (!tags.some((tag: string) => allowed.includes(tag))) return false;
+			const inTags = tags.some((tag: string) => tagMatchesAny(tag, allowed));
+			const inTitleOrType = allowed.some((candidate) => {
+				const c = candidate.toLowerCase().trim();
+				return title.includes(c) || productType.includes(c);
+			});
+			if (!inTags && !inTitleOrType) return false;
 		}
 		return true;
 	}

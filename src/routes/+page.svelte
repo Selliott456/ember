@@ -179,10 +179,9 @@
 			<h2>Shop by Category</h2>
 		</div>
 		<div class="category-row">
-			<CategoryTile href="/products?category=tees" label="Tees" />
-			<CategoryTile href="/products?category=long-sleeves" label="Long Sleeves" />
-			<CategoryTile href="/products?category=hoodies" label="Hoodies" />
-			<CategoryTile href="/products?category=bottoms" label="Bottoms" />
+			<CategoryTile href="/products?type=tee" label="Tees" />
+			<CategoryTile href="/products?type=sweater" label="Sweaters" />
+			<CategoryTile href="/products?type=bottoms" label="Bottoms" />
 		</div>
 	</section>
 
@@ -377,9 +376,10 @@
 	}
 
 	.category-row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1rem;
+		width: 100%;
 	}
 
 	.value-strip {
@@ -461,6 +461,10 @@
 			left: 1rem;
 			right: 1rem;
 			bottom: 1rem;
+		}
+
+		.category-row {
+			grid-template-columns: 1fr;
 		}
 	}
 </style>

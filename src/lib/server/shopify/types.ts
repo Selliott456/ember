@@ -26,6 +26,7 @@ export type Product = {
   id: string;
   handle: string;
   title: string;
+  productType?: string;
   description: string;
   /** Shopify product tags, e.g. "fieldnotes", "basecamp", "conditions". */
   tags?: string[];

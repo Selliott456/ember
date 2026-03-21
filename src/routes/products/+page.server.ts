@@ -1,10 +1,8 @@
 import type { PageServerLoad } from './$types';
-import { getProducts } from '$lib/server/shopify';
-
-const ALL_PRODUCTS_LIMIT = 100;
+import { getAllProducts } from '$lib/server/shopify';
 
 export const load: PageServerLoad = async () => {
-	const result = await getProducts(ALL_PRODUCTS_LIMIT);
+	const result = await getAllProducts();
 
 	if (!result.ok) {
 		return {

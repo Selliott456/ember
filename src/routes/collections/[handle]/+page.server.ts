@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { getCollectionByHandle, getProducts } from '$lib/server/shopify';
+import { getAllProducts, getCollectionByHandle } from '$lib/server/shopify';
 
-const PRODUCTS_PER_COLLECTION = 50;
+const PRODUCTS_PER_COLLECTION = 250;
 
 const TAG_COLLECTIONS: Record<string, { title: string; tags: string[] }> = {
 	'field-notes': { title: 'Field Notes', tags: ['fieldnotes'] },
@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	// For our featured collections, derive products from tags instead of Shopify collections.
 	const tagConfig = TAG_COLLECTIONS[handle];
 	if (tagConfig) {
-		const result = await getProducts(PRODUCTS_PER_COLLECTION);
+		const result = await getAllProducts();
 
 		if (!result.ok) {
 			return {

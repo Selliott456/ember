@@ -7,14 +7,16 @@
 
 <style>
 	.category-tile {
-		display: inline-flex;
+		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.8rem 1.2rem;
+		width: 100%;
+		min-height: 3.1rem;
+		padding: 1rem 1.2rem;
 		border: 1px solid #34373b;
 		color: #e8e9e8;
 		text-decoration: none;
-		font-size: 0.78rem;
+		font-size: 0.82rem;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		background: #121417;

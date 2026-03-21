@@ -1,11 +1,16 @@
 export const PRODUCT_LIST_QUERY = `
-  query ProductList($first: Int!) {
-    products(first: $first) {
+  query ProductList($first: Int!, $after: String) {
+    products(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       edges {
         node {
           id
           handle
           title
+          productType
           description
           tags
           featuredImage {
@@ -51,6 +56,7 @@ export const PRODUCT_BY_HANDLE_QUERY = `
       id
       handle
       title
+      productType
       description
       tags
       featuredImage {
@@ -251,7 +257,9 @@ const COLLECTION_PRODUCT_FIELDS = `
   id
   handle
   title
+  productType
   description
+  tags
   featuredImage {
     url
     altText
@@ -304,7 +312,7 @@ export const COLLECTIONS_QUERY = `
 `;
 
 export const COLLECTION_BY_HANDLE_QUERY = `
-  query CollectionByHandle($handle: String!, $productsFirst: Int!) {
+  query CollectionByHandle($handle: String!, $productsFirst: Int!, $productsAfter: String) {
     collection(handle: $handle) {
       id
       handle
@@ -314,7 +322,11 @@ export const COLLECTION_BY_HANDLE_QUERY = `
         url
         altText
       }
-      products(first: $productsFirst) {
+      products(first: $productsFirst, after: $productsAfter) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
         edges {
           node {
             ${COLLECTION_PRODUCT_FIELDS}
