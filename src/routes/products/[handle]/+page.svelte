@@ -4,6 +4,9 @@
   import { cart } from "$lib/stores/cart";
   import { excerpt } from "$lib/seo";
   import { formatPrice } from "$lib/formatPrice";
+  import SizeGuideModal from "$lib/components/size-guide/SizeGuideModal.svelte";
+  import { SIZE_GUIDES } from "$lib/size-guides/data";
+  import { getSizeGuideKey } from "$lib/size-guides/getSizeGuideKey";
 
   let { data }: { data: PageData } = $props();
 
@@ -65,6 +68,14 @@
   let zoomActive = $state(false);
   let zoomX = $state(50);
   let zoomY = $state(50);
+  let sizeGuideOpen = $state(false);
+  const sizeGuideKey = $derived(getSizeGuideKey(product));
+  const sizeGuide = $derived(SIZE_GUIDES[sizeGuideKey]);
+  const fitSummary = $derived(
+    sizeGuideKey === "cropped_tee"
+      ? "Fitted, boxy cut"
+      : "Relaxed, slightly oversized",
+  );
   $effect(() => {
     const len = galleryImages.length;
     if (len && galleryIndex >= len) galleryIndex = 0;
@@ -202,6 +213,18 @@
             {/each}
           </select>
         </label>
+        <div class="size-guide-meta">
+          <button
+            type="button"
+            class="size-guide-trigger"
+            aria-haspopup="dialog"
+            aria-expanded={sizeGuideOpen}
+            onclick={() => (sizeGuideOpen = true)}
+          >
+            Size Guide
+          </button>
+          <p class="fit-summary">{fitSummary}</p>
+        </div>
       {/if}
 
       <label>
@@ -227,6 +250,13 @@
     </div>
   </section>
 </main>
+
+<SizeGuideModal
+  open={sizeGuideOpen}
+  guide={sizeGuide}
+  onClose={() => (sizeGuideOpen = false)}
+  labelledBy="size-guide-title"
+/>
 
 <style>
   .page {
@@ -324,6 +354,39 @@
     color: #555;
   }
 
+  .size-guide-meta {
+    margin: -0.25rem 0 1rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+  }
+
+  .size-guide-trigger {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #d5b24d;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(213, 178, 77, 0.6);
+  }
+
+  .size-guide-trigger:hover {
+    color: #e3c36a;
+    border-bottom-color: rgba(227, 195, 106, 0.8);
+  }
+
+  .fit-summary {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #9da6af;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
   select,
   input[type="number"] {
     width: 100%;
@@ -360,6 +423,12 @@
 
     .zoom-pop {
       display: none;
+    }
+
+    .size-guide-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.3rem;
     }
   }
 </style>
