@@ -33,6 +33,31 @@
 		jeans: ['jeans', 'denim']
 	};
 
+	const FILTER_LABELS: Record<string, string> = {
+		tee: 'Tees',
+		'long-sleeve': 'Long Sleeves',
+		hoodie: 'Hoodies',
+		sweater: 'Sweaters',
+		pants: 'Pants',
+		bottoms: 'Bottoms',
+		jeans: 'Jeans',
+		hanko: 'Hanko',
+		badbish: 'Badbish',
+		'field-notes': 'Field Notes',
+		'base-camp': 'Basecamp',
+		conditions: 'Conditions',
+		naeba: 'Naeba'
+	};
+
+	const heading = $derived.by(() => {
+		if (typeFilter) return FILTER_LABELS[typeFilter] ?? 'Filtered Products';
+		if (collectionFilter) return FILTER_LABELS[collectionFilter] ?? 'Filtered Products';
+		if (genderFilter) return FILTER_LABELS[genderFilter] ?? 'Filtered Products';
+		return 'All products';
+	});
+	const pageTitle = $derived(`${heading} | Storefront`);
+	const pageDescription = $derived(`Browse ${heading.toLowerCase()}.`);
+
 	function tagMatchesAny(tag: string, allowed: string[]) {
 		const normalizedTag = tag.toLowerCase().trim();
 		return allowed.some((candidate) => {
@@ -143,17 +168,17 @@
 </script>
 
 <svelte:head>
-	<title>All products | Storefront</title>
-	<meta name="description" content="Browse all products." />
+	<title>{pageTitle}</title>
+	<meta name="description" content={pageDescription} />
 	<link rel="canonical" href={canonical} />
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content="All products | Storefront" />
-	<meta property="og:description" content="Browse all products." />
+	<meta property="og:title" content={pageTitle} />
+	<meta property="og:description" content={pageDescription} />
 	<meta property="og:url" content={canonical} />
 </svelte:head>
 
 <main class="page">
-	<h1>All products</h1>
+	<h1>{heading}</h1>
 	<a class="back" href="/">← Back to home</a>
 
 	{#if error}
