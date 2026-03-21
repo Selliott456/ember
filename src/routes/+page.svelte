@@ -398,6 +398,10 @@
     width: 100%;
   }
 
+  .category-row > :global(*) {
+    min-width: 0;
+  }
+
   .value-strip {
     margin-top: clamp(2.8rem, 6vw, 5rem);
     padding: 1.35rem 1rem;
@@ -481,6 +485,12 @@
 
     .category-row {
       grid-template-columns: 1fr;
+      justify-items: center;
+      gap: 0.75rem;
+    }
+
+    .category-row > :global(*) {
+      width: min(100%, 22rem);
     }
   }
 </style>

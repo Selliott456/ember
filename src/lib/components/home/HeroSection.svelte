@@ -27,12 +27,17 @@
   .hero {
     position: relative;
     min-height: clamp(520px, 72vh, 760px);
-    margin: 0 calc(50% - 50vw);
+    width: 100dvw;
+    max-width: 100dvw;
+    margin-left: calc(50% - 50dvw);
+    margin-right: calc(50% - 50dvw);
     background-image: var(--hero-image);
     background-size: cover;
     background-position: center;
     display: grid;
     align-items: center;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .overlay {
@@ -50,9 +55,11 @@
     z-index: 1;
     max-width: 1120px;
     width: 100%;
+    min-width: 0;
     margin: 0 auto;
     padding: 0 1.5rem;
     color: #f8f8f7;
+    box-sizing: border-box;
   }
 
   .eyebrow {
@@ -74,6 +81,7 @@
 
   .brand-heading img {
     width: min(52vw, 420px);
+    max-width: 100%;
     height: auto;
     display: block;
   }
@@ -105,6 +113,9 @@
   }
 
   .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     text-decoration: none;
     padding: 0.8rem 1.25rem;
     font-size: 0.82rem;
@@ -142,5 +153,36 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+
+  @media (max-width: 768px) {
+    .content {
+      display: grid;
+      justify-items: center;
+      text-align: center;
+      padding: 0 1rem;
+    }
+
+    .brand-heading img {
+      margin: 0 auto;
+      width: min(72vw, 360px);
+    }
+
+    .tagline {
+      width: min(100%, 32ch);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .actions {
+      justify-content: center;
+      width: 100%;
+      gap: 0.6rem;
+    }
+
+    .btn {
+      width: min(100%, 18rem);
+      box-sizing: border-box;
+    }
   }
 </style>

@@ -11,6 +11,13 @@
   const cartQuantity = $derived($cart.cart?.totalQuantity ?? 0);
   let isNavOpen = $state(false);
 
+  function handleNavSelection(event: MouseEvent) {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("a")) {
+      isNavOpen = false;
+    }
+  }
+
   onMount(() => {
     cart.loadCart();
   });
@@ -49,6 +56,7 @@
         class="site-nav"
         class:site-nav-open={isNavOpen}
         aria-label="Primary"
+        onclick={handleNavSelection}
       >
         <div class="site-nav-links">
           <div class="nav-item nav-item-shop">

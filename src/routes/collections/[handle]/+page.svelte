@@ -214,12 +214,12 @@
   .page {
     max-width: 960px;
     margin: 0 auto;
-  padding: 0.75rem 1rem 3rem;
+    padding: 0.75rem 1rem 3rem;
   }
 
   .back {
     display: inline-block;
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
     text-decoration: none;
     color: #444;
   }
@@ -333,4 +333,5 @@
   .error {
     color: #b00020;
   }
+
 </style>
