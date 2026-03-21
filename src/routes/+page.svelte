@@ -46,12 +46,12 @@
 	const curatedProducts = $derived(products.slice(0, 4));
 
 	const lookbookImages = [
-		'/images/shoreditch.png',
-		'/images/skater_laugh.png',
-		'/images/hanko_sweater.png',
-		'/images/badbish.png',
+		'/images/couple_street.png',
+		'/images/group_skatepark.png',
+		'/images/group_street.png',
+		'/images/group_skate_laugh.png',
 		'/images/group_skate_sundown.png',
-		'/images/hero-image.png'
+		'/images/couple_skatepark.png'
 	];
 </script>
 
@@ -103,6 +103,21 @@
 		</p>
 	</section>
 
+	<section class="new-drop">
+		<div class="new-drop-media">
+			<img src="/images/badbish_quad_1.png" alt="Badbish new drop preview" loading="lazy" />
+		</div>
+		<div class="new-drop-copy">
+			<p class="new-drop-eyebrow">New Drop</p>
+			<h2>Badbish</h2>
+			<p>
+				Signature graphics, washed tones, and heavyweight staples. A focused
+				drop designed to hit hard and wear easy.
+			</p>
+			<a href="/collections/badbish">Shop Badbish</a>
+		</div>
+	</section>
+
 	<section class="section">
 		<div class="section-heading">
 			<h2>Best Sellers</h2>
@@ -137,7 +152,7 @@
 	<section class="editorial-banner">
 		<img src="/images/shoreditch.png" alt="Ember lifestyle banner" loading="lazy" />
 		<div class="editorial-copy">
-			<p>Quietly premium. Designed to be worn hard.</p>
+			<p>Premium pieces. designed to be worn hard.</p>
 			<a href="/about">Explore the Brand</a>
 		</div>
 	</section>
@@ -180,15 +195,6 @@
 				</figure>
 			{/each}
 		</div>
-	</section>
-
-	<section class="email-signup">
-		<h2>Join the list</h2>
-		<p>Get early access to drops, restocks, and limited releases.</p>
-		<form onsubmit={(event) => event.preventDefault()}>
-			<input type="email" placeholder="Email address" aria-label="Email address" />
-			<button type="submit">Subscribe</button>
-		</form>
 	</section>
 
 	<SiteFooter />
@@ -244,6 +250,61 @@
 		line-height: 1.65;
 	}
 
+	.new-drop {
+		margin-top: clamp(2.8rem, 6vw, 5rem);
+		display: grid;
+		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+		gap: 1.2rem;
+		align-items: stretch;
+	}
+
+	.new-drop-media img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.new-drop-copy {
+		background: #101316;
+		border: 1px solid #2a2f35;
+		padding: clamp(1.1rem, 2.3vw, 1.8rem);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.new-drop-eyebrow {
+		margin: 0 0 0.35rem;
+		font-size: 0.73rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-brand-gold);
+	}
+
+	.new-drop-copy h2 {
+		font-size: clamp(1.4rem, 2.8vw, 2rem);
+		color: var(--color-brand-gold);
+	}
+
+	.new-drop-copy p {
+		margin: 0.85rem 0 0;
+		color: #c2c7cb;
+		line-height: 1.6;
+	}
+
+	.new-drop-copy a {
+		margin-top: 1rem;
+		align-self: flex-start;
+		text-decoration: none;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		font-size: 0.75rem;
+		color: #f2f3f2;
+		border-bottom: 1px solid rgba(242, 243, 242, 0.75);
+		padding-bottom: 0.2rem;
+	}
+
 	.product-grid {
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -283,6 +344,7 @@
 		font-size: clamp(1.1rem, 3vw, 1.8rem);
 		line-height: 1.25;
 		font-weight: 500;
+		color: var(--color-brand-gold);
 	}
 
 	.editorial-copy a {
@@ -348,51 +410,14 @@
 		transform: scale(1.02);
 	}
 
-	.email-signup {
-		margin-top: clamp(3rem, 7vw, 6rem);
-		padding: clamp(1.4rem, 3.5vw, 2rem);
-		border: 1px solid #2c3035;
-		background: #101316;
-	}
-
-	.email-signup h2 {
-		margin: 0;
-	}
-
-	.email-signup p {
-		margin: 0.7rem 0 1.2rem;
-		color: #c4c9ce;
-	}
-
-	.email-signup form {
-		display: flex;
-		gap: 0.6rem;
-		flex-wrap: wrap;
-	}
-
-	.email-signup input {
-		flex: 1 1 240px;
-		padding: 0.8rem 0.9rem;
-		border: 1px solid #32363b;
-		background: #0d1013;
-		color: #ececea;
-	}
-
-	.email-signup button {
-		padding: 0.8rem 1.1rem;
-		border: 1px solid #dfe2e0;
-		background: #e9ebe9;
-		color: #0d1013;
-		text-transform: uppercase;
-		font-size: 0.74rem;
-		letter-spacing: 0.12em;
-		cursor: pointer;
-	}
-
 	@media (max-width: 960px) {
 		.collection-grid,
 		.product-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.new-drop {
+			grid-template-columns: 1fr;
 		}
 
 		.lookbook-grid {

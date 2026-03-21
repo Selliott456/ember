@@ -5,6 +5,7 @@
   import { formatPrice } from "$lib/formatPrice";
   import HankoCollectionHero from "$lib/components/collections/HankoCollectionHero.svelte";
   import NaebaCollectionHero from "$lib/components/collections/NaebaCollectionHero.svelte";
+  import BadbishCollectionHero from "$lib/components/collections/BadbishCollectionHero.svelte";
 
   let { data }: { data: PageData } = $props();
 
@@ -13,6 +14,7 @@
   const error = $derived(data.error);
   const isHankoCollection = $derived(collection?.handle === "hanko");
   const isNaebaCollection = $derived(collection?.handle === "naeba");
+  const isBadbishCollection = $derived(collection?.handle === "badbish");
   const metaDescription = $derived(
     collection ? excerpt(collection.description, 160) || collection.title : "",
   );
@@ -69,6 +71,9 @@
       <a class="back" href="/collections">← All collections</a>
     {:else if isNaebaCollection}
       <NaebaCollectionHero imageSrc="/images/naeba_hero.png" />
+      <a class="back" href="/collections">← All collections</a>
+    {:else if isBadbishCollection}
+      <BadbishCollectionHero imageSrc="/images/badbish_group.png" />
       <a class="back" href="/collections">← All collections</a>
     {:else}
       <a class="back" href="/collections">← All collections</a>

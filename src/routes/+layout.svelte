@@ -26,7 +26,7 @@
     <div class="site-header-inner">
       <a href="/" class="brand-wordmark" aria-label="Ember storefront home">
         <img
-          src="/images/branding/ember_logo_white_transparent.png"
+          src="/images/branding/ember_crop.png"
           alt=""
           loading="eager"
           aria-hidden="true"
@@ -192,11 +192,8 @@
 
   .brand-wordmark img {
     display: block;
-    width: clamp(96px, 14vw, 142px);
-    height: 58px;
-    object-fit: cover;
-    object-position: center;
-    clip-path: inset(10px 0 0 0);
+    width: clamp(82px, 11vw, 118px);
+    height: auto;
   }
 
   .site-nav-toggle {
