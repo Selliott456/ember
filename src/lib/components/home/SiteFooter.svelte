@@ -14,7 +14,6 @@
 
     <nav aria-label="Footer">
       <a href="/products">Shop</a>
-      <a href="/about">About</a>
       <a href="/faq">FAQ</a>
       <a href="/shipping">Shipping</a>
       <a href="/returns">Returns</a>
@@ -35,6 +34,11 @@
     padding: 3rem 1.5rem;
     border-top: 1px solid #262a2e;
     background: #0d0f11;
+    width: 100dvw;
+    max-width: 100dvw;
+    margin-left: calc(50% - 50dvw);
+    margin-right: calc(50% - 50dvw);
+    box-sizing: border-box;
   }
 
   .inner {

@@ -43,7 +43,7 @@
 		}
 	] as const;
 
-	const curatedProducts = $derived(products.slice(0, 8));
+	const curatedProducts = $derived(products.slice(0, 12));
 
 	function getColorOptions(product: any): string[] {
 		const seen = new Set<string>();
@@ -97,6 +97,49 @@
 
 	<section class="section">
 		<div class="section-heading">
+			<h2>Best Sellers</h2>
+		</div>
+		<div class="product-grid">
+			{#each curatedProducts as product}
+				<ProductCard
+					href={`/products/${product.handle}`}
+					title={product.title}
+					imageSrc={(product.images?.[0]?.url ?? product.featuredImage?.url) || '/images/hero-image.png'}
+					imageAlt={product.images?.[0]?.altText ?? product.featuredImage?.altText ?? product.title}
+					hoverImageSrc={product.images?.[1]?.url ?? null}
+					hoverImageAlt={product.images?.[1]?.altText ?? product.title}
+					amount={product.priceRange.minVariantPrice.amount}
+					currencyCode={product.priceRange.minVariantPrice.currencyCode}
+					colorOptions={getColorOptions(product)}
+				/>
+			{:else}
+				{#each [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as idx}
+					<ProductCard
+						href="/products"
+						title={`Ember Piece ${idx + 1}`}
+						imageSrc={lookbookImages[(idx + 1) % lookbookImages.length]}
+						imageAlt="Ember product placeholder"
+						amount="98"
+						currencyCode="USD"
+					/>
+				{/each}
+			{/each}
+		</div>
+	</section>
+
+	<section class="section">
+		<div class="section-heading">
+			<h2>Shop by Category</h2>
+		</div>
+		<div class="category-row">
+			<CategoryTile href="/products?type=tee" label="Tees" />
+			<CategoryTile href="/products?type=sweater" label="Sweaters" />
+			<CategoryTile href="/products?type=bottoms" label="Bottoms" />
+		</div>
+	</section>
+
+	<section class="section">
+		<div class="section-heading">
 			<h2>Featured Collections</h2>
 		</div>
 		<div class="collection-grid">
@@ -134,54 +177,11 @@
 		</div>
 	</section>
 
-	<section class="section">
-		<div class="section-heading">
-			<h2>Best Sellers</h2>
-		</div>
-		<div class="product-grid">
-			{#each curatedProducts as product}
-				<ProductCard
-					href={`/products/${product.handle}`}
-					title={product.title}
-					imageSrc={(product.images?.[0]?.url ?? product.featuredImage?.url) || '/images/hero-image.png'}
-					imageAlt={product.images?.[0]?.altText ?? product.featuredImage?.altText ?? product.title}
-					hoverImageSrc={product.images?.[1]?.url ?? null}
-					hoverImageAlt={product.images?.[1]?.altText ?? product.title}
-					amount={product.priceRange.minVariantPrice.amount}
-					currencyCode={product.priceRange.minVariantPrice.currencyCode}
-					colorOptions={getColorOptions(product)}
-				/>
-			{:else}
-				{#each [0, 1, 2, 3, 4, 5, 6, 7] as idx}
-					<ProductCard
-						href="/products"
-						title={`Ember Piece ${idx + 1}`}
-						imageSrc={lookbookImages[(idx + 1) % lookbookImages.length]}
-						imageAlt="Ember product placeholder"
-						amount="98"
-						currencyCode="USD"
-					/>
-				{/each}
-			{/each}
-		</div>
-	</section>
-
 	<section class="editorial-banner">
 		<img src="/images/shoreditch.png" alt="Ember lifestyle banner" loading="lazy" />
 		<div class="editorial-copy">
 			<p>Premium pieces. designed to be worn hard.</p>
 			<a href="/about">Explore the Brand</a>
-		</div>
-	</section>
-
-	<section class="section">
-		<div class="section-heading">
-			<h2>Shop by Category</h2>
-		</div>
-		<div class="category-row">
-			<CategoryTile href="/products?type=tee" label="Tees" />
-			<CategoryTile href="/products?type=sweater" label="Sweaters" />
-			<CategoryTile href="/products?type=bottoms" label="Bottoms" />
 		</div>
 	</section>
 
@@ -213,8 +213,8 @@
 		</div>
 	</section>
 
-	<SiteFooter />
 </main>
+<SiteFooter />
 
 <style>
 	:global(body) {

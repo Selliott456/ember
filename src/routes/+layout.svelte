@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { onMount } from "svelte";
-  import favicon from "$lib/assets/favicon.svg";
   import "$lib/theme.css";
   import { cart } from "$lib/stores/cart";
 
@@ -17,11 +16,13 @@
 </script>
 
 <svelte:head>
-  <link rel="icon" href={favicon} />
+  <link rel="icon" href="/images/branding/ember_logo_white_transparent.png" />
 </svelte:head>
 
 <div class="app-root surface-grain">
-  <div class="announcement-bar">Free shipping over $100</div>
+  <div class="announcement-bar">
+    <a href="/collections/hanko">SHOP NEW COLLECTION - HANKO</a>
+  </div>
   <header class="site-header">
     <div class="site-header-inner">
       <a href="/" class="brand-wordmark" aria-label="Ember storefront home">
@@ -49,9 +50,34 @@
         aria-label="Primary"
       >
         <div class="site-nav-links">
-          <a href="/products" data-active={currentPath.startsWith("/products")}
-            >Shop</a
-          >
+          <div class="nav-item nav-item-shop">
+            <a href="/products" data-active={currentPath.startsWith("/products")}
+              >Shop</a
+            >
+            <div class="shop-dropdown" aria-label="Shop categories">
+              <div class="shop-column">
+                <h3>Women</h3>
+                <a href="/products?gender=women&type=tee">Tees</a>
+                <a href="/products?gender=women&type=sweater">Sweaters</a>
+                <a href="/products?gender=women&type=hoodie">Hoodies</a>
+                <a href="/products?gender=women&type=bottoms">Bottoms</a>
+              </div>
+              <div class="shop-column">
+                <h3>Men</h3>
+                <a href="/products?gender=men&type=tee">Tees</a>
+                <a href="/products?gender=men&type=sweater">Sweaters</a>
+                <a href="/products?gender=men&type=hoodie">Hoodies</a>
+                <a href="/products?gender=men&type=bottoms">Bottoms</a>
+              </div>
+              <div class="shop-column">
+                <h3>Unisex</h3>
+                <a href="/products?gender=unisex&type=tee">Tees</a>
+                <a href="/products?gender=unisex&type=sweater">Sweaters</a>
+                <a href="/products?gender=unisex&type=hoodie">Hoodies</a>
+                <a href="/products?gender=unisex&type=bottoms">Bottoms</a>
+              </div>
+            </div>
+          </div>
           <a
             href="/collections"
             data-active={currentPath.startsWith("/collections")}>Collections</a
@@ -60,61 +86,10 @@
             href="/new-arrivals"
             data-active={currentPath.startsWith("/new-arrivals")}>New Arrivals</a
           >
-          <a href="/about" data-active={currentPath.startsWith("/about")}
-            >About</a
-          >
           <a href="/#lookbook" data-active={false}>Lookbook</a>
         </div>
 
         <div class="site-nav-actions">
-          <a href="/search" aria-label="Search">
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              focusable="false"
-              class="nav-icon"
-            >
-              <circle
-                cx="11"
-                cy="11"
-                r="6.5"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-              />
-              <path
-                d="M16 16l4.3 4.3"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-            </svg>
-          </a>
-          <a href="/account" aria-label="Account">
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              focusable="false"
-              class="nav-icon"
-            >
-              <circle
-                cx="12"
-                cy="8"
-                r="3.5"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-              />
-              <path
-                d="M5.5 20c1.2-3.1 3.7-4.9 6.5-4.9S17.3 16.9 18.5 20"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-            </svg>
-          </a>
           <a
             href="/cart"
             class="cart-link"
@@ -167,6 +142,16 @@
     color: #f1f3f2;
     background: #090b0d;
     border-bottom: 1px solid #262a2e;
+  }
+
+  .announcement-bar a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .announcement-bar a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.22rem;
   }
 
   .site-header {
@@ -228,6 +213,15 @@
     gap: 1.1rem;
   }
 
+  .nav-item {
+    position: relative;
+  }
+
+  .nav-item-shop {
+    padding-bottom: 0.7rem;
+    margin-bottom: -0.7rem;
+  }
+
   .site-nav-links a {
     text-decoration: none;
     color: #e4e7e8;
@@ -239,6 +233,48 @@
   .site-nav-links a:hover,
   .site-nav-links a[data-active="true"] {
     color: #f3f4f3;
+  }
+
+  .shop-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 560px;
+    padding: 0.9rem 1rem;
+    border: 1px solid #2f353c;
+    background: rgba(9, 12, 15, 0.98);
+    display: none;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.15rem;
+    z-index: 25;
+  }
+
+  .shop-column h3 {
+    margin: 0 0 0.45rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-brand-gold);
+    font-weight: 600;
+  }
+
+  .shop-column a {
+    display: block;
+    padding: 0.2rem 0;
+    font-size: 0.73rem;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: #d8dde1;
+    border-bottom: none;
+  }
+
+  .shop-column a:hover {
+    color: #f5f6f5;
+  }
+
+  .nav-item-shop:hover .shop-dropdown,
+  .nav-item-shop:focus-within .shop-dropdown {
+    display: grid;
   }
 
   .site-nav-actions {
@@ -303,6 +339,10 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 0.85rem;
+    }
+
+    .shop-dropdown {
+      display: none !important;
     }
   }
 </style>
