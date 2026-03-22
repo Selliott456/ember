@@ -1,7 +1,5 @@
-import { shopifyConfig } from '$lib/server/config/shopify';
+import { getShopifyConfig } from '$lib/server/config/shopify';
 import { logShopify } from './logger';
-
-const SHOPIFY_GRAPHQL_ENDPOINT = `https://${shopifyConfig.storeDomain}/api/${shopifyConfig.apiVersion}/graphql.json`;
 
 export type ShopifyGraphQLError = {
   message: string;
@@ -53,6 +51,9 @@ export async function shopifyGraphQL<Data, Variables = Record<string, unknown>>(
 
   logShopify('info', requestId, operationName, 'request start');
 
+  const shopifyConfig = getShopifyConfig();
+  const endpoint = `https://${shopifyConfig.storeDomain}/api/${shopifyConfig.apiVersion}/graphql.json`;
+
   const authHeaderName =
     shopifyConfig.storefrontTokenMode === 'private'
       ? 'Shopify-Storefront-Private-Token'
@@ -67,7 +68,7 @@ export async function shopifyGraphQL<Data, Variables = Record<string, unknown>>(
     [authHeaderName]: shopifyConfig.storefrontToken
   };
 
-  const res = await fetch(SHOPIFY_GRAPHQL_ENDPOINT, {
+  const res = await fetch(endpoint, {
     method: 'POST',
     headers,
     body: JSON.stringify({

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
+  import { afterNavigate } from "$app/navigation";
   import { onMount } from "svelte";
   import "$lib/theme.css";
   import { cart } from "$lib/stores/cart";
@@ -11,12 +12,9 @@
   const cartQuantity = $derived($cart.cart?.totalQuantity ?? 0);
   let isNavOpen = $state(false);
 
-  function handleNavSelection(event: MouseEvent) {
-    const target = event.target as HTMLElement | null;
-    if (target?.closest("a")) {
-      isNavOpen = false;
-    }
-  }
+  afterNavigate(() => {
+    isNavOpen = false;
+  });
 
   onMount(() => {
     cart.loadCart();
@@ -52,12 +50,7 @@
         <span></span>
         <span></span>
       </button>
-      <nav
-        class="site-nav"
-        class:site-nav-open={isNavOpen}
-        aria-label="Primary"
-        onclick={handleNavSelection}
-      >
+      <nav class="site-nav" class:site-nav-open={isNavOpen} aria-label="Primary">
         <div class="site-nav-links">
           <div class="nav-item nav-item-shop">
             <a href="/products" data-active={currentPath.startsWith("/products")}

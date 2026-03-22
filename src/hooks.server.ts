@@ -1,8 +1,9 @@
 import type { Handle } from '@sveltejs/kit';
-import { shopifyConfig } from '$lib/server/config/shopify';
+import { getShopifyConfig } from '$lib/server/config/shopify';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	const cartId = event.cookies.get(shopifyConfig.cartCookieName) ?? null;
+	const { cartCookieName } = getShopifyConfig();
+	const cartId = event.cookies.get(cartCookieName) ?? null;
 
 	// Do not create a new cart here; just mirror the cookie into locals.
 	event.locals.cartId = cartId || null;

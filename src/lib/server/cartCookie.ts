@@ -1,17 +1,18 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { shopifyConfig } from '$lib/server/config/shopify';
+import { getShopifyConfig } from '$lib/server/config/shopify';
 
 /** Cookie path used for set and delete so they stay in sync. */
 const CART_COOKIE_PATH = '/' as const;
 
 /** Options for setting the cart cookie. Secure defaults: httpOnly, sameSite lax, path '/', maxAge from config, secure in production. */
 function cartCookieSetOptions() {
+	const { cartCookieMaxAgeSeconds } = getShopifyConfig();
 	return {
 		path: CART_COOKIE_PATH,
 		httpOnly: true,
 		sameSite: 'lax' as const,
 		secure: process.env.NODE_ENV === 'production',
-		maxAge: shopifyConfig.cartCookieMaxAgeSeconds
+		maxAge: cartCookieMaxAgeSeconds
 	};
 }
 
@@ -51,16 +52,19 @@ export function isCartNotFound(result: {
 }
 
 export function getCartId(event: RequestEvent): string | null {
-	return event.locals.cartId ?? event.cookies.get(shopifyConfig.cartCookieName) ?? null;
+	const { cartCookieName } = getShopifyConfig();
+	return event.locals.cartId ?? event.cookies.get(cartCookieName) ?? null;
 }
 
 export function setCartId(event: RequestEvent, cartId: string): void {
+	const { cartCookieName } = getShopifyConfig();
 	event.locals.cartId = cartId;
-	event.cookies.set(shopifyConfig.cartCookieName, cartId, cartCookieSetOptions());
+	event.cookies.set(cartCookieName, cartId, cartCookieSetOptions());
 }
 
 export function clearCartId(event: RequestEvent): void {
+	const { cartCookieName } = getShopifyConfig();
 	event.locals.cartId = null;
-	event.cookies.delete(shopifyConfig.cartCookieName, { path: CART_COOKIE_PATH });
+	event.cookies.delete(cartCookieName, { path: CART_COOKIE_PATH });
 }
 
