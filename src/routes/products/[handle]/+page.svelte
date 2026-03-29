@@ -74,7 +74,9 @@
   const fitSummary = $derived(
     sizeGuideKey === "cropped_tee"
       ? "Fitted, boxy cut"
-      : "Relaxed, slightly oversized",
+      : sizeGuideKey === "jeans_trousers"
+        ? "Relaxed fit; rise varies by style"
+        : "Relaxed, slightly oversized",
   );
   $effect(() => {
     const len = galleryImages.length;

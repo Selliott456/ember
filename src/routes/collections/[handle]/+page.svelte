@@ -121,7 +121,7 @@
 <main class="page">
   {#if collection}
     {#if isHankoCollection}
-      <HankoCollectionHero imageSrc="/images/Hanko-fonts.png" />
+      <HankoCollectionHero imageSrc="/images/hanko-stmaps.png" />
       <a class="back" href="/collections">← All collections</a>
     {:else if isNaebaCollection}
       <NaebaCollectionHero imageSrc="/images/naeba_hero.png" />

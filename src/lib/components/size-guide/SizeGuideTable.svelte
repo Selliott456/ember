@@ -2,6 +2,20 @@
 	import type { SizeGuide } from '$lib/size-guides/data';
 
 	let { guide }: { guide: SizeGuide } = $props();
+
+	type TableBlock = { sectionTitle: string | null; columns: string[]; rows: string[][] };
+
+	const tableBlocks = $derived.by((): TableBlock[] => {
+		const sections = guide.tableSections;
+		if (sections && sections.length > 0) {
+			return sections.map((s) => ({
+				sectionTitle: s.title,
+				columns: s.columns,
+				rows: s.rows
+			}));
+		}
+		return [{ sectionTitle: null, columns: guide.columns, rows: guide.rows }];
+	});
 </script>
 
 <section class="size-guide-content">
@@ -10,29 +24,42 @@
 		<p>{guide.fitNote}</p>
 	</header>
 
-	<div class="table-wrap" role="region" aria-label={`${guide.title} measurements`}>
-		<table>
-			<thead>
-				<tr>
-					{#each guide.columns as col}
-						<th scope="col">{col}</th>
-					{/each}
-				</tr>
-			</thead>
-			<tbody>
-				{#each guide.rows as row}
-					<tr>
-						{#each row as cell, index}
-							{#if index === 0}
-								<th scope="row">{cell}</th>
-							{:else}
-								<td>{cell}</td>
-							{/if}
+	<div class="tables-stack">
+		{#each tableBlocks as block}
+			{#if block.sectionTitle}
+				<h4 class="table-section-title">{block.sectionTitle}</h4>
+			{/if}
+			<div
+				class="table-wrap"
+				role="region"
+				aria-label={block.sectionTitle
+					? `${block.sectionTitle} measurements`
+					: `${guide.title} measurements`}
+			>
+				<table>
+					<thead>
+						<tr>
+							{#each block.columns as col}
+								<th scope="col">{col}</th>
+							{/each}
+						</tr>
+					</thead>
+					<tbody>
+						{#each block.rows as row}
+							<tr>
+								{#each row as cell, index}
+									{#if index === 0}
+										<th scope="row">{cell}</th>
+									{:else}
+										<td>{cell}</td>
+									{/if}
+								{/each}
+							</tr>
 						{/each}
-					</tr>
-				{/each}
-			</tbody>
-		</table>
+					</tbody>
+				</table>
+			</div>
+		{/each}
 	</div>
 
 	<p class="tolerance">{guide.toleranceNote}</p>
@@ -48,6 +75,17 @@
 			<p class="final-note">{guide.finalNote}</p>
 		{/if}
 	</section>
+
+	{#if guide.fitNotes && guide.fitNotes.length > 0}
+		<section class="measure-help fit-notes" aria-label="Fit notes">
+			<h4>Fit Notes</h4>
+			<ul>
+				{#each guide.fitNotes as item}
+					<li>{item}</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
 </section>
 
 <style>
@@ -67,6 +105,19 @@
 		margin: 0.45rem 0 0;
 		color: var(--color-text-muted);
 		line-height: 1.6;
+	}
+
+	.tables-stack {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.table-section-title {
+		margin: 0;
+		font-size: 0.88rem;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+		color: #d9e0e6;
 	}
 
 	.table-wrap {
@@ -134,5 +185,9 @@
 		margin: 0.3rem 0;
 		color: #d0d8de;
 		line-height: 1.55;
+	}
+
+	.fit-notes {
+		margin-top: 0.15rem;
 	}
 </style>

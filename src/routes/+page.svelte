@@ -68,6 +68,21 @@
     "/images/group_skate_sundown.png",
     "/images/couple_skatepark.png",
   ];
+
+  const lifestyleShots = [
+    {
+      src: "/images/sporty_couple.png",
+      alt: "Two people in sporty Ember streetwear outdoors",
+    },
+    {
+      src: "/images/gym_couple.png",
+      alt: "Couple training together wearing Ember",
+    },
+    {
+      src: "/images/basketball_couple.png",
+      alt: "Couple on the court in Ember basketball-inspired looks",
+    },
+  ] as const;
 </script>
 
 <svelte:head>
@@ -125,6 +140,22 @@
             currencyCode="USD"
           />
         {/each}
+      {/each}
+    </div>
+  </section>
+
+  <section
+    class="section lifestyle-section lifestyle-after-bestsellers"
+    aria-label="Lifestyle photography"
+  >
+    <div class="section-heading">
+      <h2>On the move</h2>
+    </div>
+    <div class="lifestyle-grid">
+      {#each lifestyleShots as shot}
+        <figure class="lifestyle-shot">
+          <img src={shot.src} alt={shot.alt} loading="lazy" />
+        </figure>
       {/each}
     </div>
   </section>
@@ -276,6 +307,36 @@
     color: #c5c7c9;
     font-size: clamp(1.05rem, 2.2vw, 1.35rem);
     line-height: 1.65;
+  }
+
+  .lifestyle-after-bestsellers {
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .lifestyle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .lifestyle-shot {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid #24292e;
+    background: #0f1215;
+  }
+
+  .lifestyle-shot img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    filter: saturate(0.92) contrast(1.03);
+    transition: transform 240ms ease;
+  }
+
+  .lifestyle-shot:hover img {
+    transform: scale(1.02);
   }
 
   .new-drop {
@@ -453,6 +514,10 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .lifestyle-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .new-drop {
       grid-template-columns: 1fr;
     }
@@ -473,7 +538,8 @@
 
     .collection-grid,
     .product-grid,
-    .lookbook-grid {
+    .lookbook-grid,
+    .lifestyle-grid {
       grid-template-columns: 1fr;
     }
 

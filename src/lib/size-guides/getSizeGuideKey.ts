@@ -21,6 +21,21 @@ export function getSizeGuideKey(product: GuideProductLike): SizeGuideKey {
 	if (includesAny(joined, ['hoodie', 'hooded'])) return 'hoodie';
 	if (includesAny(joined, ['crop', 'cropped'])) return 'cropped_tee';
 	if (
+		includesAny(joined, [
+			'jean',
+			'jeans',
+			'trouser',
+			'trousers',
+			'pant',
+			'pants',
+			'bottoms',
+			'denim',
+			'jogger',
+			'joggers'
+		])
+	)
+		return 'jeans_trousers';
+	if (
 		includesAny(joined, ['tee', 't-shirt', 't shirt', 'shirt', 'short sleeve'])
 	)
 		return 'tee';

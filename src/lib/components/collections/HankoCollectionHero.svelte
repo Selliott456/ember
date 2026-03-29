@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let imageSrc = '/images/Hanko-fonts.png';
+	export let imageSrc = '/images/hanko-stmaps.png';
 </script>
 
 <section class="hanko-hero" style={`--hero-image: url('${imageSrc}')`}>
