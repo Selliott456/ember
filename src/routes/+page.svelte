@@ -62,9 +62,9 @@
 
   const lookbookImages = [
     "/images/couple_street.png",
-    "/images/group_skatepark.png",
+    "/images/comfy_couch.png",
     "/images/group_street.png",
-    "/images/group_skate_laugh.png",
+    "/images/couple_park.png",
     "/images/group_skate_sundown.png",
     "/images/couple_skatepark.png",
   ];
