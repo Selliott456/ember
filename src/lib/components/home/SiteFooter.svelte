@@ -21,9 +21,33 @@
     </nav>
 
     <div class="socials" aria-label="Social links">
-      <a href="https://instagram.com" aria-label="Instagram">IG</a>
-      <a href="https://tiktok.com" aria-label="TikTok">TT</a>
-      <a href="https://pinterest.com" aria-label="Pinterest">PT</a>
+      <a
+        href="https://instagram.com/ember_apparel_co"
+        aria-label="Instagram @ember_apparel_co"
+        target="_blank"
+        rel="noreferrer"
+        class="social-link instagram"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="social-icon">
+          <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor" stroke-width="1.6" />
+          <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6" />
+          <circle cx="17" cy="7" r="1" fill="currentColor" />
+        </svg>
+      </a>
+      <a
+        href="https://tiktok.com/@ember_apparel_co"
+        aria-label="TikTok @ember_apparel_co"
+        target="_blank"
+        rel="noreferrer"
+        class="social-link tiktok"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="social-icon">
+          <path
+            d="M15.6 3c.3 2.1 1.6 3.6 3.8 4v2.8c-1.3 0-2.6-.4-3.8-1.1v6.3c0 3.2-2.6 5.8-5.8 5.8S4 18.2 4 15s2.6-5.8 5.8-5.8c.3 0 .6 0 .9.1v2.9c-.3-.1-.6-.2-.9-.2-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3V3h2.8z"
+            fill="currentColor"
+          />
+        </svg>
+      </a>
     </div>
   </div>
 </footer>
@@ -88,7 +112,21 @@
 
   .socials {
     display: flex;
-    gap: 0.9rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+  }
+
+  .social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .social-icon {
+    width: 1.9rem;
+    height: 1.9rem;
+    flex: 0 0 auto;
   }
 
   @media (max-width: 760px) {

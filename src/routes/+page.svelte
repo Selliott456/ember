@@ -222,7 +222,7 @@
     />
     <div class="editorial-copy">
       <p>Premium pieces. Designed to be worn hard.</p>
-      <a href="/about">Explore the Brand</a>
+      <a href="/collections">Explore the Brand</a>
     </div>
   </section>
 

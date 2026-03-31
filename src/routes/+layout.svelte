@@ -124,6 +124,34 @@
               </span>
             {/if}
           </a>
+          <span class="nav-divider" aria-hidden="true">|</span>
+          <a
+            href="https://instagram.com/ember_apparel_co"
+            aria-label="Instagram @ember_apparel_co"
+            target="_blank"
+            rel="noreferrer"
+            class="social-nav-link"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="nav-icon">
+              <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <circle cx="17" cy="7" r="1" fill="currentColor" />
+            </svg>
+          </a>
+          <a
+            href="https://tiktok.com/@ember_apparel_co"
+            aria-label="TikTok @ember_apparel_co"
+            target="_blank"
+            rel="noreferrer"
+            class="social-nav-link"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="nav-icon">
+              <path
+                d="M15.6 3c.3 2.1 1.6 3.6 3.8 4v2.8c-1.3 0-2.6-.4-3.8-1.1v6.3c0 3.2-2.6 5.8-5.8 5.8S4 18.2 4 15s2.6-5.8 5.8-5.8c.3 0 .6 0 .9.1v2.9c-.3-.1-.6-.2-.9-.2-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3V3h2.8z"
+                fill="currentColor"
+              />
+            </svg>
+          </a>
         </div>
       </nav>
     </div>
@@ -294,6 +322,19 @@
     display: inline-flex;
     align-items: center;
     position: relative;
+  }
+
+  .social-nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-divider {
+    color: #6b7280;
+    opacity: 0.7;
+    font-size: 0.8rem;
+    line-height: 1;
   }
 
   .nav-icon {
